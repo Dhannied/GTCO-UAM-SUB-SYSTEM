@@ -1,0 +1,45 @@
+<div class="sidebar">
+  <div class="logo-container">
+    <div class="logo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/2/28/GTCO_logo.svg" alt="GTCO Logo" class="logo-image" />
+    </div>
+    <div class="logo-text">
+      <p>Centralized <br> 
+        Deactivation <br> 
+        System</p>
+    </div>
+  </div>
+  
+  <nav class="sidebar-nav">
+    <a class="nav-item" [class.active]="activeRoute === 'dashboard'" routerLink="/dashboard">
+      <span class="icon"><i class="fas fa-tachometer-alt"></i></span>
+      <span>Dashboard</span>
+    </a>
+    <a class="nav-item" [class.active]="activeRoute === 'employees'" routerLink="/employees">
+      <span class="icon"><i class="fas fa-users"></i></span>
+      <span>Employees</span>
+    </a>
+    <a class="nav-item" [class.active]="activeRoute === 'audit-trails'" routerLink="/audit-trails">
+      <span class="icon"><i class="fas fa-clipboard-list"></i></span>
+      <span>Audit Trails</span>
+    </a>
+    <a class="nav-item" [class.active]="activeRoute === 'analytics'" routerLink="/analytics">
+      <span class="icon"><i class="fas fa-chart-line"></i></span>
+      <span>Analytics Report</span>
+    </a>
+    <a class="nav-item" [class.active]="activeRoute === 'user-management'" routerLink="/user-management" (click)="navigateToUserManagement()">
+      <span class="icon"><i class="fas fa-user-cog"></i></span>
+      <span>User Management</span>
+    </a>
+  </nav>
+  
+  <a class="nav-item logout" routerLink="/login">
+    <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+    <span>Logout</span>
+  </a>
+</div>
+
+
+
+
+

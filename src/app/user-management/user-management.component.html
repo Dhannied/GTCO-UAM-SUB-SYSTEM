@@ -1,0 +1,140 @@
+<div class="user-management-container">
+  <!-- Use the shared sidebar component with correct activeRoute -->
+  <app-sidebar activeRoute="user-management"></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="user-management-header">
+      <h1>User <span class="highlight">Management</span></h1>
+    </div>
+    
+    <!-- Search and Filters -->
+    <div class="search-filters">
+      <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+          type="text" 
+          placeholder="Search users..." 
+          [(ngModel)]="searchTerm"
+        >
+        <button *ngIf="searchTerm" class="clear-search" (click)="clearSearch()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="filters">
+        <div class="filter">
+          <select [(ngModel)]="roleFilter">
+            <option value="All Roles">All Roles</option>
+            <option value="Supervisor">Supervisor</option>
+            <option value="Officer">Officer</option>
+          </select>
+        </div>
+        
+        <div class="filter">
+          <select [(ngModel)]="statusFilter">
+            <option value="All Statuses">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="users-table-container" *ngIf="paginatedUsers.length > 0; else noUsers">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>UAM OFFICER</th>
+            <th>ROLE</th>
+            <th>DEPARTMENT</th>
+            <th>LAST ACTIVE</th>
+            <th>STATUS</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of paginatedUsers">
+            <td class="user-cell">
+              <div class="user-avatar" *ngIf="!user.photo">
+                <div class="user-initials">{{ getInitials(user.name) }}</div>
+              </div>
+              <img *ngIf="user.photo" [src]="user.photo" alt="{{ user.name }}" class="user-photo">
+              <div class="user-info">
+                <div class="user-name">{{ user.name }}</div>
+                <div class="user-email">{{ user.email }}</div>
+              </div>
+            </td>
+            <td>{{ user.role }}</td>
+            <td>{{ user.department }}</td>
+            <td>{{ user.lastActive }}</td>
+            <td>
+              <span class="status-badge" [class.active]="user.status === 'Active'" [class.inactive]="user.status === 'Inactive'">
+                {{ user.status }}
+              </span>
+            </td>
+            <td class="actions-cell">
+              <!-- Option 1: Use routerLink directly -->
+              <a [routerLink]="['/user-management/user', user.id]" class="view-btn">
+                <span>View</span>
+              </a>
+              
+              <!-- Option 2: If you prefer to keep the button, but with a more direct approach -->
+              <!-- 
+              <button class="view-btn" (click)="router.navigate(['/user-management/user', user.id])">
+                <span>View</span>
+              </button>
+              -->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <ng-template #noUsers>
+      <div class="not-found">
+        <h2>No users found</h2>
+        <p>No users match your search criteria. Please try a different search term or filter.</p>
+        <button class="clear-search-btn" (click)="clearSearch()">Clear Search</button>
+      </div>
+    </ng-template>
+    
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="filteredUsers.length > 0">
+      <div class="pagination-info">
+        Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to 
+        {{ Math.min(currentPage * itemsPerPage, filteredUsers.length) }} of 
+        {{ filteredUsers.length }} users
+      </div>
+      <div class="pagination-controls">
+        <button class="pagination-btn" (click)="previousPage()" [disabled]="currentPage === 1">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <ng-container *ngFor="let page of [1, 2, 3, 4, 5]">
+          <button 
+            *ngIf="page <= totalPages"
+            class="pagination-btn" 
+            [class.active]="currentPage === page"
+            (click)="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+        </ng-container>
+        
+        <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+

@@ -1,0 +1,125 @@
+<div class="dashboard-container">
+  <!-- Use the shared sidebar component -->
+  <app-sidebar activeRoute="dashboard"></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header (not fixed) -->
+    <div class="dashboard-header">
+      <div class="header-content">
+        <div>
+          <h1>Welcome Back, <span class="user-name">{{ userName }}</span></h1>
+          <p class="user-info">Role: {{ userRole }} | Last Login: {{ lastLogin }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Dashboard filters section -->
+    <div class="filters">
+      <div class="filter">
+        <select [(ngModel)]="selectedTimeRange" (change)="applyFilters()">
+          <option value="This Month">This Month</option>
+          <option value="This Week">This Week</option>
+          <option value="Today">Today</option>
+        </select>
+      </div>
+      
+      <div class="filter">
+        <select [(ngModel)]="selectedApplication" (change)="applyFilters()">
+          <option value="Applications">All Applications</option>
+          <option value="Core Banking">Core Banking</option>
+          <option value="Finnacle">Finnacle</option>
+          <option value="Gap">Gap</option>
+          <option value="E-Document Manager">E-Document Manager</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Top Section: Stats Cards and Top Apps side by side -->
+    <div class="top-section">
+      <!-- Stats Cards -->
+      <div class="stats-container">
+
+        <div class="stats-card">
+          <div class="stats-icon"><i class="fas fa-users"></i></div>
+          <div class="stats-info">
+            <div class="stats-title">Active Users</div>
+            <div class="stats-value">{{ activeUsers }}</div>
+          </div>
+        </div>
+
+        <div class="stats-card">
+          <div class="stats-icon"><i class="fas fa-file-alt"></i></div>
+          <div class="stats-info">
+            <div class="stats-title">Total Deactivations</div>
+            <div class="stats-value">{{ totalDeactivations }}</div>
+          </div>
+        </div>
+        
+        <div class="stats-card">
+          <div class="stats-icon"><i class="fas fa-clock"></i></div>
+          <div class="stats-info">
+            <div class="stats-title">Temporary Deactivations</div>
+            <div class="stats-value">{{ temporaryDeactivations }}</div>
+          </div>
+        </div>
+        
+        <div class="stats-card">
+          <div class="stats-icon"><i class="fas fa-ban"></i></div>
+          <div class="stats-info">
+            <div class="stats-title">Permanent Deactivations</div>
+            <div class="stats-value">{{ permanentDeactivations }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Deactivated Apps -->
+      <div class="top-apps">
+        <h2>Top 4 Deactivated Apps</h2>
+        <div class="app-list">
+          @for (app of topDeactivatedApps; track app.name) {
+            <div class="app-item">
+              <div class="app-name">{{ app.name }}</div>
+              <div class="app-bar-container">
+                <div class="app-bar" [style.width.%]="getAppBarPercentage(app)"></div>
+              </div>
+              <div class="app-count">{{ app.count }}</div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activities with custom max height -->
+    <div class="recent-activities">
+      <h2>Recent Activities</h2>
+      <app-audit-log-table 
+        [logs]="recentActivities"
+        [showEmployee]="true"
+        [showReason]="true"
+        [showDuration]="true"
+        [showPagination]="false"
+        [maxHeight]="'270px'"
+      ></app-audit-log-table>
+    </div>
+  </div>
+</div>
+
+<script src="https://kit.fontawesome.com/c86695b7cc.js" crossorigin="anonymous"></script>
+
+<!-- Remove this duplicate script tag at the bottom of the file -->
+<!-- <script src="https://kit.fontawesome.com/c86695b7cc.js" crossorigin="anonymous"></script> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+

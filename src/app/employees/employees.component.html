@@ -1,0 +1,111 @@
+<div class="employees-container">
+  <!-- Use the shared sidebar component -->
+  <app-sidebar activeRoute="employees"></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="employees-header">
+      <h1>Employee <span class="highlight">Management</span></h1>
+    </div>
+    
+    <!-- Search and Filters -->
+    <div class="search-filters">
+      <div class="search-box">
+        <i class="fas fa-search search-icon" style="font-size: 16px; opacity: 1;"></i>
+        <input 
+          type="text" 
+          placeholder="Search employees..." 
+          [(ngModel)]="searchTerm"
+        >
+      </div>
+    </div>
+
+    <!-- Employees Table -->
+    <div class="employees-table-container">
+      @if (paginatedEmployees.length > 0) {
+        <table class="employees-table">
+          <thead>
+            <tr>
+              <th>EMPLOYEE</th>
+              <th>EMPLOYEE ID</th>
+              <th>DEPARTMENT</th>
+              <th>POSITION</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (employee of paginatedEmployees; track employee.id) {
+              <tr>
+                <td class="employee-cell">
+                  @if (employee.photo) {
+                    <img [src]="employee.photo" alt="{{ employee.name }}" class="employee-avatar">
+                  } @else {
+                    <div class="employee-initials">{{ getInitials(employee.name) }}</div>
+                  }
+                  <span class="employee-name">{{ employee.name }}</span>
+                </td>
+                <td>{{ employee.id }}</td>
+                <td>{{ employee.department }}</td>
+                <td>{{ employee.position }}</td>
+                <td>
+                  <button class="view-btn" (click)="viewEmployee(employee.id)">
+                    <span>View</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <div class="not-found">
+          <h2>No employees found</h2>
+          <p>No employees match your search criteria. Please try a different search term.</p>
+          <button class="clear-search-btn" (click)="clearSearch()">Clear Search</button>
+        </div>
+      }
+    </div>
+    
+    <!-- Pagination -->
+    <div class="pagination">
+      <div class="pagination-info">
+        Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to 
+        {{ Math.min(currentPage * itemsPerPage, filteredEmployees.length) }} of 
+        {{ filteredEmployees.length }} employees
+      </div>
+      <div class="pagination-controls">
+        <button class="pagination-btn" (click)="previousPage()" [disabled]="currentPage === 1">
+          <i class="fas fa-chevron-left" style="font-size: 14px;"></i>
+        </button>
+        
+        @for (page of [1, 2, 3, 4, 5]; track page) {
+          @if (page <= totalPages) {
+            <button 
+              class="pagination-btn" 
+              [class.active]="currentPage === page"
+              (click)="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+          }
+        }
+        
+        <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
+          <i class="fas fa-chevron-right" style="font-size: 14px;"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+

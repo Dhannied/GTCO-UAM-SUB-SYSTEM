@@ -1,0 +1,84 @@
+<div class="analytics-container">
+  <!-- Use the shared sidebar component -->
+  <app-sidebar activeRoute="analytics"></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="analytics-header">
+      <h1>Analytics <span class="highlight">Report</span></h1>
+      
+      <!-- Date Filter and Export Button -->
+      <div class="header-controls">
+        <div class="date-filter">
+          <select [(ngModel)]="selectedDateRange" (change)="onDateFilterChange()">
+            <option value="last7days">Last 7 Days</option>
+            <option value="last30days">Last 30 Days</option>
+            <option value="last90days">Last 90 Days</option>
+            <option value="last12months">Last 12 Months</option>
+          </select>
+        </div>
+        
+        <button class="export-btn" (click)="exportReport()">
+          Export Report
+        </button>
+      </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="stats-container">
+      <div class="stats-card">
+        <div class="stats-icon"><i class="fas fa-file-alt"></i></div>
+        <div class="stats-info">
+          <div class="stats-title">Total Deactivations</div>
+          <div class="stats-value">{{ totalDeactivations }}</div>
+        </div>
+      </div>
+      
+      <div class="stats-card">
+        <div class="stats-icon"><i class="fas fa-clock"></i></div>
+        <div class="stats-info">
+          <div class="stats-title">Temporary Deactivations</div>
+          <div class="stats-value">{{ temporaryDeactivations }}</div>
+        </div>
+      </div>
+      
+      <div class="stats-card">
+        <div class="stats-icon"><i class="fas fa-ban"></i></div>
+        <div class="stats-info">
+          <div class="stats-title">Permanent Deactivations</div>
+          <div class="stats-value">{{ permanentDeactivations }}</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Charts Section - Rearranged -->
+    <div class="charts-container">
+      <!-- Type and Department Charts Side by Side -->
+      <div class="chart-card medium">
+        <canvas id="typeChart"></canvas>
+      </div>
+      
+      <div class="chart-card medium">
+        <canvas id="departmentChart"></canvas>
+      </div>
+      
+      <!-- Trend Chart Below -->
+      <div class="chart-card large">
+        <canvas id="trendChart"></canvas>
+      </div>
+      
+      <!-- Application Chart -->
+      <div class="chart-card medium">
+        <canvas id="appChart"></canvas>
+      </div>
+      
+      <!-- Reason Chart -->
+      <div class="chart-card medium">
+        <canvas id="reasonChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+

@@ -1,0 +1,113 @@
+<div class="audit-trail-container">
+  <!-- Use the shared sidebar component -->
+  <app-sidebar activeRoute="audit-trails"></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="audit-trail-header">
+      <h1>Audit <span class="highlight">Trails</span></h1>
+      
+      <!-- Export Button (now in a container div) -->
+      <div class="header-controls">
+        <button class="export-btn" (click)="exportAuditTrails()">
+          Export Audit Trails
+        </button>
+      </div>
+    </div>
+    
+    <!-- Search and Filters -->
+    <div class="search-filters">
+      <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+          type="text" 
+          placeholder="Search audit trails..." 
+          [(ngModel)]="searchTerm"
+          (input)="applyFilters()"
+        >
+        <button *ngIf="searchTerm" class="clear-search" (click)="clearSearch()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="filters">
+        <div class="filter">
+          <select [(ngModel)]="dateFilter" (change)="applyFilters()">
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
+            <option value="quarter">Last 90 Days</option>
+          </select>
+        </div>
+        
+        <div class="filter">
+          <select [(ngModel)]="actionTypeFilter" (change)="applyFilters()">
+            <option value="All Actions">All Actions</option>
+            <option value="Temporary">Temporary</option>
+            <option value="Permanent">Permanent</option>
+            <option value="Reactivation">Reactivation</option>
+          </select>
+        </div>
+        
+        <div class="filter">
+          <select [(ngModel)]="applicationFilter" (change)="applyFilters()">
+            <option value="All Applications">All Applications</option>
+            <option *ngFor="let app of uniqueApplications" [value]="app">{{ app }}</option>
+          </select>
+        </div>
+        
+        <div class="filter">
+          <select [(ngModel)]="officerFilter" (change)="applyFilters()">
+            <option value="All Officers">All Officers</option>
+            <option value="Current User">My Deactivations</option>
+          </select>
+        </div>
+        
+        <!-- Add Clear Filters button -->
+        <button class="clear-filters-btn" (click)="clearFilters()">
+          Clear Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Audit Logs Table -->
+    <div *ngIf="filteredLogs.length > 0; else noLogs">
+      <app-audit-log-table 
+        [logs]="paginatedLogs"
+        [showEmployee]="true"
+        [showReason]="true"
+        [showDuration]="true"
+        [showPagination]="true"
+        [itemsPerPage]="itemsPerPage"
+        [currentPage]="currentPage"
+        [totalItems]="filteredLogs.length"
+        [maxHeight]="'560px'"
+      ></app-audit-log-table>
+    </div>
+    
+    <ng-template #noLogs>
+      <div class="not-found">
+        <h2>No audit logs found</h2>
+        <p>No audit logs match your search criteria. Please try a different search term or filter.</p>
+        <button class="clear-search-btn" (click)="clearSearch()">Clear Search</button>
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

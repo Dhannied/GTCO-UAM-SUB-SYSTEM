@@ -1,0 +1,80 @@
+<div class="audit-table-container">
+  <div class="audit-table">
+    <div #scrollableTable class="scrollable-table" [style.maxHeight]="maxHeight">
+      <table>
+        <thead>
+          <tr>
+            <th>Date / Time</th>
+            <th *ngIf="showEmployee">Employee</th>
+            <th>Application</th>
+            <th>Action type</th>
+            <th *ngIf="showDuration">Duration</th>
+            <th *ngIf="showReason">Reason</th>
+            <th *ngIf="showOfficer">PERFORMED BY</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngIf="paginatedLogs.length > 0; else noLogs">
+            <tr *ngFor="let log of paginatedLogs">
+              <td>{{ log.date }}</td>
+              <td *ngIf="showEmployee" class="employee-cell">
+                <div class="employee-info">
+                  <span class="employee-name">{{ log.employee }}</span>
+                  <span class="employee-id" *ngIf="log.employeeId">{{ log.employeeId }}</span>
+                </div>
+              </td>
+              <td>{{ log.application }}</td>
+              <td>
+                <span class="action-type" [attr.data-type]="log.actionType">
+                  {{ log.actionType }}
+                </span>
+              </td>
+              <td *ngIf="showDuration">{{ log.actionType === 'Temporary' ? log.duration : 'Not Applicable' }}</td>
+              <td *ngIf="showReason">{{ log.reason }}</td>
+              <td *ngIf="showOfficer">{{ log.officer }}</td>
+            </tr>
+          </ng-container>
+          <ng-template #noLogs>
+            <tr>
+              <td [attr.colspan]="showEmployee && showDuration && showReason ? 7 : 
+                                   (!showEmployee && showDuration && showReason) ? 6 :
+                                   (showEmployee && !showDuration && showReason) ? 6 :
+                                   (showEmployee && showDuration && !showReason) ? 6 : 5" 
+                  class="no-logs-message">
+                No audit logs found
+              </td>
+            </tr>
+          </ng-template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="showPagination && totalItems > 0">
+    <div class="pagination-info">
+      Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to 
+      {{ Math.min(currentPage * itemsPerPage, totalItems) }} of 
+      {{ totalItems }} entries
+    </div>
+    <div class="pagination-controls">
+      <button 
+        class="pagination-btn" 
+        [disabled]="currentPage === 1"
+        (click)="previousPage()"
+      >
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <span class="page-indicator">{{ currentPage }} / {{ totalPages }}</span>
+      <button 
+        class="pagination-btn" 
+        [disabled]="currentPage === totalPages"
+        (click)="nextPage()"
+      >
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+

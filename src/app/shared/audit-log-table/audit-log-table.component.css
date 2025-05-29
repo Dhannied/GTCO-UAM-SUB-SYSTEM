@@ -1,0 +1,165 @@
+/* Table styles */
+.audit-table-container {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.audit-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Add scrollable container for table body */
+.scrollable-table {
+  overflow-y: auto;
+  /* max-height is set dynamically via [style.maxHeight] binding */
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: white;
+}
+
+th {
+  background-color: #fff;
+  color: #e84d1c;
+  font-weight: 500;
+  text-align: left;
+  padding: 15px 20px;
+  font-size: 14px;
+  text-transform: none;
+  letter-spacing: 0.5px;
+}
+
+td {
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  color: #333;
+  font-size: 14px;
+}
+
+.employee-cell {
+  display: flex;
+  align-items: center;
+}
+
+.employee-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.employee-name {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.employee-id {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Action type badges */
+.action-type {
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-type[data-type="Temporary"] {
+  background-color: #ffefd0;
+  color: #e8a41c;
+}
+
+.action-type[data-type="Permanent"] {
+  background-color: #ffe8e0;
+  color: #e84d1c;
+}
+
+.action-type[data-type="Reactivation"] {
+  background-color: #d1ffdb;
+  color: #2e7d32;
+}
+
+/* Glossy effect for action type badges */
+.action-type::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 20px 20px 0 0;
+}
+
+/* Pagination styles */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+}
+
+.pagination-info {
+  color: #666;
+  font-size: 14px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background-color: white;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #f5f5f5;
+  border-color: #ccc;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-indicator {
+  font-size: 14px;
+  color: #666;
+}
+
+.no-logs-message {
+  text-align: center;
+  padding: 30px;
+  color: #666;
+}
+
+
