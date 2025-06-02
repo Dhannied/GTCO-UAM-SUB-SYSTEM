@@ -6,7 +6,7 @@
   <div class="main-content">
     <!-- Header with back button -->
     <div class="details-header">
-      <a routerLink="/employees" class="back-button">
+      <a (click)="goBack()" class="back-button">
         <i class="fas fa-arrow-left"></i> Back to Employees
       </a>
     </div>
@@ -38,8 +38,8 @@
           </div>
           
           <div class="detail-item">
-            <h3>Last access review</h3>
-            <p>{{ employee?.lastAccessReview }}</p>
+            <h3>Join Date</h3>
+            <p>{{ employee?.joinDate || 'Not available' }}</p>
           </div>
         </div>
       </div>
@@ -56,39 +56,49 @@
             <div class="access-col action-col">Action</div>
           </div>
           
-          @for (app of employee?.applications || []; track app.id) {
-            <div class="access-row">
-              <div class="access-col application-col">
-                <div class="app-info">
-                  <div class="app-icon" [style.background-color]="app.iconBg">
-                    <i class="fas fa-{{ app.icon }}"></i>
-                  </div>
-                  <div class="app-details">
-                    <div class="app-name">{{ app.name }}</div>
-                    <div class="app-platform">{{ app.platform }}</div>
+          @if (hasApplications()) {
+            @for (app of getApplications(); track app.id) {
+              <div class="access-row">
+                <div class="access-col application-col">
+                  <div class="app-info">
+                    <div class="app-icon" [style.background-color]="app.iconBg">
+                      <i class="fas fa-{{ app.icon }}"></i>
+                    </div>
+                    <div class="app-details">
+                      <div class="app-name">{{ app.name }}</div>
+                      <div class="app-platform">{{ app.platform }}</div>
+                    </div>
                   </div>
                 </div>
+                
+                <div class="access-col level-col">
+                  @if (app.status === 'Inactive') {
+                    <span class="deactivation-type" [attr.data-type]="app.deactivationType || 'Temporary'">
+                      {{ app.deactivationType || 'Temporary' }}
+                    </span>
+                  } @else {
+                    <span>Not Applicable</span>
+                  }
+                </div>
+                
+                <div class="access-col last-used-col">{{ app.lastUsed }}</div>
+                
+                <div class="access-col action-col">
+                  @if (app.status === 'Inactive') {
+                    @if (app.deactivationType === 'Permanent') {
+                      <span class="permanently-deactivated-text">Permanently Deactivated</span>
+                    } @else {
+                      <button class="activate-btn" (click)="activateAccess(app.id)">Reactivate</button>
+                    }
+                  } @else {
+                    <button class="deactivate-btn" (click)="deactivateAccess(app.id)">Deactivate</button>
+                  }
+                </div>
               </div>
-              
-              <div class="access-col level-col">
-                @if (app.status === 'Inactive') {
-                  <span class="deactivation-type" [attr.data-type]="app.deactivationType || 'Temporary'">
-                    {{ app.deactivationType || 'Temporary' }}
-                  </span>
-                } @else {
-                  <span>Not Applicable</span>
-                }
-              </div>
-              
-              <div class="access-col last-used-col">{{ app.lastUsed }}</div>
-              
-              <div class="access-col action-col">
-                @if (app.status === 'Inactive') {
-                  <button class="activate-btn" (click)="activateAccess(app.id)">Reactivate</button>
-                } @else {
-                  <button class="deactivate-btn" (click)="deactivateAccess(app.id)">Deactivate</button>
-                }
-              </div>
+            }
+          } @else {
+            <div class="no-applications">
+              <p>No applications found for this employee.</p>
             </div>
           }
         </div>
@@ -96,7 +106,7 @@
 
       <!-- Audit Log Section -->
       <div class="audit-log-section">
-        <div class="audit-header-container">
+        <div class="header-with-filters">
           <h2>Access Audit Log</h2>
           <div class="audit-filters">
             <div class="date-filter">

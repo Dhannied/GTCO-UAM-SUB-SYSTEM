@@ -1,9 +1,20 @@
-// Remove the import for UserDetailsComponent
-// Remove the route for user details
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { UserManagementComponent } from './user-management/user-management.component';
+import { UserDetailsComponent } from './user-management/user-details/user-details.component';
 
 const routes: Routes = [
-  // Other routes remain
+  { path: '', redirectTo: '/user-management', pathMatch: 'full' },
   { path: 'user-management', component: UserManagementComponent },
-  // Remove this route:
-  // { path: 'user-management/user/:id', component: UserDetailsComponent },
+  { path: 'user-management/user/:id', component: UserDetailsComponent },
+  // Add other routes as needed
 ];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+
+
+

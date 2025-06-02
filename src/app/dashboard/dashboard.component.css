@@ -481,9 +481,38 @@
 .recent-activities {
   background-color: white;
   border-radius: 10px;
-  padding: 20px;
+  padding: 20px 20px 0 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 0; /* Remove bottom margin from last element */
+  margin-bottom: 0;
+}
+
+.recent-activities h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 20px;
+  color: #333;
+}
+
+/* Override styles for the audit-log-table component */
+:host ::ng-deep .audit-log-table-container {
+  box-shadow: none;
+  border-radius: 0;
+}
+
+:host ::ng-deep .audit-log-table th {
+  color: #e84d1c;
+  font-weight: 500;
+  text-align: left;
+  padding: 10px 15px;
+  font-size: 14px;
+  border-bottom: 1px solid #eee;
+}
+
+:host ::ng-deep .audit-log-table td {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  color: #333;
+  font-size: 14px;
 }
 
 /* App list styles */
@@ -533,10 +562,10 @@
 }
 
 .app-count {
-  width: 50px;
+  font-weight: 500;
+  color: #333;
+  width: 30px;
   text-align: right;
-  font-size: 14px;
-  color: #666;
 }
 
 /* Simple table with scrollable body */
@@ -799,6 +828,221 @@
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3) !important;
   transform: translateY(-1px) !important;
 }
+
+/* Style for date filter to match application filter */
+.date-filter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.date-filter select {
+  background-color: #dd4f05;
+  color: #ffffff;
+  border-radius: 25px;
+  padding: 10px 30px 10px 15px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  appearance: none;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  min-width: 160px;
+  transition: all 0.2s ease;
+  
+  /* Add dropdown arrow */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 12px;
+}
+
+/* Add glossy effect with pseudo-element */
+.date-filter::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 25px 25px 0 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Hover effect for select elements - matching application filter */
+.date-filter select:hover {
+  background-color: #FF5A1F;
+  background-image: 
+    linear-gradient(to bottom, 
+      rgba(255, 255, 255, 0.4) 0%, 
+      rgba(255, 255, 255, 0) 50%,
+      rgba(0, 0, 0, 0.1) 100%),
+    url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat, no-repeat;
+  background-position: center, right 15px center;
+  background-size: 100% 100%, 12px;
+  box-shadow: 
+    0 3px 6px rgba(0, 0, 0, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.4) inset;
+  transform: translateY(-1px);
+}
+
+/* Focus effect */
+.date-filter select:focus {
+  outline: none;
+  background-color: #FF5A1F;
+  box-shadow: 
+    0 3px 6px rgba(0, 0, 0, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 0 0 2px rgba(232, 77, 28, 0.2);
+}
+
+/* Modal overlay for date range dialog */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Date range dialog */
+.date-range-dialog {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 400px;
+  max-width: 90%;
+  overflow: hidden;
+  animation: dialog-fade-in 0.3s ease;
+}
+
+@keyframes dialog-fade-in {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dialog header */
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.dialog-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+/* Dialog content */
+.dialog-content {
+  padding: 20px;
+}
+
+.date-field {
+  margin-bottom: 15px;
+}
+
+.date-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #555;
+}
+
+.date-input {
+  position: relative;
+}
+
+.date-input input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.date-input i {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  pointer-events: none;
+}
+
+/* Dialog footer */
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  gap: 10px;
+}
+
+.cancel-btn {
+  background-color: #f5f5f5;
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cancel-btn:hover {
+  background-color: #e5e5e5;
+}
+
+.apply-btn {
+  background-color: #dd4f05;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.apply-btn:hover {
+  background-color: #c04504;
+}
+
+
+
+
+
+
+
 
 
 

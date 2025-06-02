@@ -13,7 +13,7 @@
 /* Main content area */
 .main-content {
   flex: 1;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   border-radius: 0 20px 20px 0;
   padding: 20px 40px;
   margin-left: 250px; /* Same as sidebar width */
@@ -28,6 +28,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+  padding: 20px 0;
+  border-bottom: 1px solid #eaeaea;
 }
 
 .user-management-header h1 {
@@ -151,6 +153,222 @@
   cursor: not-allowed;
 }
 
+/* Add User Button - styled like export button */
+.add-user-btn {
+  background-color: #dd4f05;
+  color: #ffffff;
+  border-radius: 25px;
+  padding: 10px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: none;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.add-user-btn i {
+  margin-right: 8px;
+}
+
+/* Hover effect */
+.add-user-btn:hover {
+  background-color: #FF5A1F;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Active/pressed effect */
+.add-user-btn:active {
+  background-color: #E06A2B;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transform: translateY(1px);
+}
+
+/* Add glossy effect with a separate element */
+.add-user-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 25px 25px 0 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 10px;
+  width: 600px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 20px;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.error-message {
+  color: #e84d1c;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+/* Role options */
+.role-options {
+  display: flex;
+  gap: 20px;
+}
+
+.role-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Apps selection */
+.apps-selection {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.app-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Autocomplete */
+.autocomplete-container {
+  position: relative;
+}
+
+.autocomplete-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 5px 5px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.autocomplete-item {
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.autocomplete-item:hover {
+  background-color: #f5f5f5;
+}
+
+/* Form buttons */
+.cancel-btn {
+  background-color: #f1f1f1;
+  color: #333;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.submit-btn {
+  background-color: #e84d1c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.submit-btn:disabled {
+  background-color: #f1a28e;
+  cursor: not-allowed;
+}
+
 /* Search and Filters */
 .search-filters {
   display: flex;
@@ -196,19 +414,78 @@
   gap: 15px;
 }
 
+/* Filter styles - updated to match audit-trail filter buttons */
+.filter {
+  position: relative;
+  border-radius: 25px;
+  overflow: visible;
+  margin-right: 10px;
+  z-index: 1;
+}
+
 .filter select {
+  position: relative;
+  z-index: 1;
   padding: 10px 30px 10px 15px;
-  border: 1px solid #ddd;
+  border: none;
   border-radius: 25px;
   font-size: 14px;
-  background-color: white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  background-color: #FFE5D9;
+  color: #e84d1c;
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.25) inset;
   appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e84d1c' stroke='%23e84d1c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 15px center;
   background-size: 12px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+  font-weight: 500;
+  width: 100%;
+}
+
+/* Add glossy effect with pseudo-element */
+.filter::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 25px 25px 0 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Hover effect */
+.filter select:hover {
+  background-color: #FFD6C2;
+  box-shadow: 
+    0 3px 6px rgba(0, 0, 0, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.4) inset;
+  transform: translateY(-1px);
+}
+
+/* Focus effect */
+.filter select:focus {
+  outline: none;
+  background-color: #FFD6C2;
+  box-shadow: 
+    0 3px 6px rgba(0, 0, 0, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.4) inset;
+}
+
+/* Style for dropdown options */
+.filter select option {
+  background-color: white !important;
+  color: #333 !important;
+  padding: 8px;
 }
 
 /* Users Table */
@@ -450,6 +727,11 @@
     grid-template-columns: repeat(1, 1fr);
   }
 }
+
+
+
+
+
 
 
 

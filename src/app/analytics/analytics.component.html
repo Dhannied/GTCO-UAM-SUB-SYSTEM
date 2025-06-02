@@ -11,17 +11,51 @@
       <!-- Date Filter and Export Button -->
       <div class="header-controls">
         <div class="date-filter">
-          <select [(ngModel)]="selectedDateRange" (change)="onDateFilterChange()">
-            <option value="last7days">Last 7 Days</option>
+          <select [(ngModel)]="selectedDateRange" (change)="onDateRangeChange()">
+            <option value="all">All Time</option>
             <option value="last30days">Last 30 Days</option>
-            <option value="last90days">Last 90 Days</option>
-            <option value="last12months">Last 12 Months</option>
+            <option value="last7days">Last 7 Days</option>
+            <option value="today">Today</option>
+            <option value="custom">Custom Range</option>
           </select>
         </div>
         
         <button class="export-btn" (click)="exportReport()">
           Export Report
         </button>
+      </div>
+
+      <!-- Custom Date Range Dialog -->
+      <div class="modal-overlay" *ngIf="showDateRangeDialog">
+        <div class="date-range-dialog">
+          <div class="dialog-header">
+            <h3>Select Date Range</h3>
+            <button class="close-btn" (click)="cancelDateRangeDialog()">×</button>
+          </div>
+          
+          <div class="dialog-content">
+            <div class="date-field">
+              <label for="startDate">From:</label>
+              <div class="date-input">
+                <input type="date" id="startDate" [(ngModel)]="tempStartDate">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+            </div>
+            
+            <div class="date-field">
+              <label for="endDate">To:</label>
+              <div class="date-input">
+                <input type="date" id="endDate" [(ngModel)]="tempEndDate">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="dialog-footer">
+            <button class="cancel-btn" (click)="cancelDateRangeDialog()">Cancel</button>
+            <button class="apply-btn" (click)="applyDateRange()">Apply</button>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -80,5 +114,6 @@
     </div>
   </div>
 </div>
+
 
 

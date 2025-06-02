@@ -32,13 +32,14 @@
       </div>
       
       <div class="filters">
-        <div class="filter">
-          <select [(ngModel)]="dateFilter" (change)="applyFilters()">
+        <div class="filter date-filter">
+          <select [(ngModel)]="datePreset" (change)="onDatePresetChange()">
             <option value="all">All Time</option>
             <option value="today">Today</option>
             <option value="week">Last 7 Days</option>
             <option value="month">Last 30 Days</option>
             <option value="quarter">Last 90 Days</option>
+            <option value="custom">Custom Range</option>
           </select>
         </div>
         
@@ -79,12 +80,38 @@
         [showEmployee]="true"
         [showReason]="true"
         [showDuration]="true"
-        [showPagination]="true"
-        [itemsPerPage]="itemsPerPage"
-        [currentPage]="currentPage"
-        [totalItems]="filteredLogs.length"
-        [maxHeight]="'560px'"
+        [showPagination]="false"
+        [maxHeight]="'auto'"
       ></app-audit-log-table>
+      
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="filteredLogs.length > 0">
+        <div class="pagination-info">
+          Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to 
+          {{ Math.min(currentPage * itemsPerPage, filteredLogs.length) }} of 
+          {{ filteredLogs.length }} audit logs
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn" (click)="previousPage()" [disabled]="currentPage === 1">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          
+          <ng-container *ngFor="let page of [1, 2, 3, 4, 5]">
+            <button 
+              *ngIf="page <= totalPages"
+              class="pagination-btn" 
+              [class.active]="currentPage === page"
+              (click)="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+          </ng-container>
+          
+          <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
     </div>
     
     <ng-template #noLogs>
@@ -106,6 +133,47 @@
 
 
 
+
+
+
+
+
+
+
+
+
+<!-- Custom Date Range Dialog -->
+<div class="modal-overlay" *ngIf="showDateRangeDialog">
+  <div class="date-range-dialog">
+    <div class="dialog-header">
+      <h3>Select Date Range</h3>
+      <button class="close-btn" (click)="cancelDateRangeDialog()">×</button>
+    </div>
+    
+    <div class="dialog-content">
+      <div class="date-field">
+        <label for="startDate">From:</label>
+        <div class="date-input">
+          <input type="date" id="startDate" [(ngModel)]="tempStartDate">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+      </div>
+      
+      <div class="date-field">
+        <label for="endDate">To:</label>
+        <div class="date-input">
+          <input type="date" id="endDate" [(ngModel)]="tempEndDate">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="dialog-footer">
+      <button class="cancel-btn" (click)="cancelDateRangeDialog()">Cancel</button>
+      <button class="apply-btn" (click)="applyDateRange()">Apply</button>
+    </div>
+  </div>
+</div>
 
 
 

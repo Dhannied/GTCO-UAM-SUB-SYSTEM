@@ -16,11 +16,13 @@
     
     <!-- Dashboard filters section -->
     <div class="filters">
-      <div class="filter">
-        <select [(ngModel)]="selectedTimeRange" (change)="applyFilters()">
+      <div class="filter date-filter">
+        <select [(ngModel)]="selectedTimeRange" (change)="onDateRangeChange()">
+          <option value="all">All Time</option>
           <option value="This Month">This Month</option>
           <option value="This Week">This Week</option>
           <option value="Today">Today</option>
+          <option value="custom">Custom Range</option>
         </select>
       </div>
       
@@ -35,24 +37,56 @@
       </div>
     </div>
 
+    <!-- Custom Date Range Dialog -->
+    <div class="modal-overlay" *ngIf="showDateRangeDialog">
+      <div class="date-range-dialog">
+        <div class="dialog-header">
+          <h3>Select Date Range</h3>
+          <button class="close-btn" (click)="cancelDateRangeDialog()">×</button>
+        </div>
+        
+        <div class="dialog-content">
+          <div class="date-field">
+            <label for="startDate">From:</label>
+            <div class="date-input">
+              <input type="date" id="startDate" [(ngModel)]="tempStartDate">
+              <i class="fas fa-calendar-alt"></i>
+            </div>
+          </div>
+          
+          <div class="date-field">
+            <label for="endDate">To:</label>
+            <div class="date-input">
+              <input type="date" id="endDate" [(ngModel)]="tempEndDate">
+              <i class="fas fa-calendar-alt"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="dialog-footer">
+          <button class="cancel-btn" (click)="cancelDateRangeDialog()">Cancel</button>
+          <button class="apply-btn" (click)="applyDateRange()">Apply</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Top Section: Stats Cards and Top Apps side by side -->
     <div class="top-section">
       <!-- Stats Cards -->
       <div class="stats-container">
-
-        <div class="stats-card">
-          <div class="stats-icon"><i class="fas fa-users"></i></div>
-          <div class="stats-info">
-            <div class="stats-title">Active Users</div>
-            <div class="stats-value">{{ activeUsers }}</div>
-          </div>
-        </div>
-
         <div class="stats-card">
           <div class="stats-icon"><i class="fas fa-file-alt"></i></div>
           <div class="stats-info">
             <div class="stats-title">Total Deactivations</div>
             <div class="stats-value">{{ totalDeactivations }}</div>
+          </div>
+        </div>
+        
+        <div class="stats-card">
+          <div class="stats-icon"><i class="fas fa-users"></i></div>
+          <div class="stats-info">
+            <div class="stats-title">Total Reactivations</div>
+            <div class="stats-value">{{ totalReactivations }}</div>
           </div>
         </div>
         
@@ -75,7 +109,7 @@
 
       <!-- Top Deactivated Apps -->
       <div class="top-apps">
-        <h2>Top 4 Deactivated Apps</h2>
+        <h2>Top Deactivated Apps</h2>
         <div class="app-list">
           @for (app of topDeactivatedApps; track app.name) {
             <div class="app-item">
@@ -90,16 +124,17 @@
       </div>
     </div>
 
-    <!-- Recent Activities with custom max height -->
+    <!-- Recent Activities -->
     <div class="recent-activities">
       <h2>Recent Activities</h2>
       <app-audit-log-table 
-        [logs]="recentActivities"
+        [logs]="recentActivities.slice(0, 4)"
         [showEmployee]="true"
         [showReason]="true"
         [showDuration]="true"
+        [showOfficer]="true"
         [showPagination]="false"
-        [maxHeight]="'270px'"
+        [maxHeight]="'auto'"
       ></app-audit-log-table>
     </div>
   </div>
@@ -109,6 +144,16 @@
 
 <!-- Remove this duplicate script tag at the bottom of the file -->
 <!-- <script src="https://kit.fontawesome.com/c86695b7cc.js" crossorigin="anonymous"></script> -->
+
+
+
+
+
+
+
+
+
+
 
 
 
