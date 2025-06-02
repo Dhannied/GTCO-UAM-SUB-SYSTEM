@@ -155,13 +155,26 @@
   }
 }
 
-/* Application Access Section with Search */
+/* Application Access Section */
 .applications-section {
   margin-bottom: 40px;
 }
 
+/* Updated styling for applications-table to include the header */
+.applications-table {
+  background-color: white;
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  overflow: hidden;
+  margin-bottom: 30px;
+}
+
+/* Section header inside the applications-table */
 .section-header {
   margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 20px;
 }
 
 .header-with-search {
@@ -221,47 +234,21 @@
   padding: 0;
 }
 
-.applications-table {
-  background-color: white;
-  border-radius: 14px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  max-height: 400px; /* Set a max height for the table */
-  display: flex;
-  flex-direction: column;
+.access-table {
+  width: 100%;
 }
 
-.table-header {
+.access-header {
   display: flex;
-  padding: 15px 20px;
-  border-bottom: 1px solid #eee;
-  background-color: white;
-  position: sticky;
-  top: 0;
-  z-index: 1;
+  padding: 0 0 15px 0;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.table-header .col {
-  font-weight: 500;
-  color: #dd4f05;
+.access-col {
   font-size: 14px;
-}
-
-.table-body {
-  overflow-y: auto; /* Make only the body scrollable */
-  flex: 1;
-}
-
-.table-row {
-  display: flex;
-  padding: 15px 20px;
-  border-bottom: 1px solid #eee;
-  align-items: center;
-  background-color: #fff;
-}
-
-.col {
-  padding: 0 10px;
+  font-weight: 500;
+  color: #e84d1c;
+  text-transform: none;
 }
 
 .application-col {
@@ -271,6 +258,15 @@
 .action-col {
   flex: 1;
   text-align: right;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.access-row {
+  display: flex;
+  padding: 20px 0;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
 }
 
 .app-info {
@@ -300,36 +296,68 @@
 }
 
 .app-platform {
-  font-size: 12px;
+  font-size: 14px;
   color: #666;
 }
 
-.not-applicable {
-  color: #999;
-  font-style: italic;
-}
-
-.grant-btn {
-  background-color: #dd4f05; /* Solid color instead of gradient */
-  color: #ffffff;
+/* Button styling based on audit-trail filter buttons */
+.grant-btn, .revoke-btn {
+  position: relative;
   border-radius: 25px;
-  padding: 8px 16px;
-  display: inline-flex;
+  padding: 10px 18px;
+  display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  box-shadow: 
-    0 2px 4px rgba(0, 0, 0, 0.2),
-    0 1px 0 rgba(255, 255, 255, 0.25) inset;
   border: none;
-  position: relative;
-  overflow: hidden;
   transition: all 0.2s ease;
+  overflow: visible;
+  z-index: 1;
 }
 
-.grant-btn::before {
+/* Grant button with orange background */
+.grant-btn {
+  background-color: #e84d1c;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Revoke button with transparent background and orange text */
+.revoke-btn {
+  background-color: transparent;
+  color: #e84d1c;
+  box-shadow: none;
+  border: 1px solid #e84d1c;
+}
+
+/* Hover effect - matching filter buttons */
+.grant-btn:hover {
+  background-color: #FF5A1F;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.revoke-btn:hover {
+  background-color: rgba(232, 77, 28, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Active/pressed effect */
+.grant-btn:active {
+  background-color: #E06A2B;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transform: translateY(1px);
+}
+
+.revoke-btn:active {
+  background-color: rgba(232, 77, 28, 0.2);
+  transform: translateY(1px);
+}
+
+/* Add glossy effect with pseudo-element only for grant button */
+.grant-btn::after {
   content: '';
   position: absolute;
   top: 0;
@@ -340,69 +368,14 @@
     rgba(255, 255, 255, 0.3) 0%, 
     rgba(255, 255, 255, 0.1) 100%);
   border-radius: 25px 25px 0 0;
+  pointer-events: none;
+  z-index: 2;
 }
 
-.grant-btn:hover {
-  background-color: #FF5A1F;
-  box-shadow: 
-    0 3px 6px rgba(0, 0, 0, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.4) inset;
-  transform: translateY(-1px);
-}
-
-.grant-btn:active {
-  background-color: #E06A2B;
-  box-shadow: 
-    0 1px 2px rgba(0, 0, 0, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.1) inset;
-  transform: translateY(1px);
-}
-
-.revoke-btn {
-  background-color: #f8f9fa;
-  color: #dd4f05;
-  border: 1px solid #dd4f05;
-  border-radius: 25px;
-  padding: 8px 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.2s ease;
-}
-
-.revoke-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(to bottom, 
-    rgba(255, 255, 255, 0.5) 0%, 
-    rgba(255, 255, 255, 0.2) 100%);
-  border-radius: 25px 25px 0 0;
-}
-
-.revoke-btn:hover {
-  background-color: #fff0ed;
-  box-shadow: 
-    0 2px 5px rgba(0, 0, 0, 0.15),
-    0 1px 0 rgba(255, 255, 255, 0.4) inset;
-  transform: translateY(-1px);
-}
-
-.revoke-btn:active {
-  background-color: #f8f9fa;
-  box-shadow: 
-    0 1px 2px rgba(0, 0, 0, 0.1),
-    0 1px 0 rgba(255, 255, 255, 0.1) inset;
-  transform: translateY(1px);
+.no-applications {
+  padding: 20px 0;
+  text-align: center;
+  color: #666;
 }
 
 /* Modal */
@@ -513,16 +486,9 @@
   transform: translateY(-1px);
 }
 
-/* Audit Log Section with Date Filter */
+/* Audit Log Section */
 .audit-log-section {
   margin-bottom: 30px;
-}
-
-.audit-log-container {
-  background-color: white;
-  border-radius: 14px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
 }
 
 .header-with-filters {
@@ -534,27 +500,124 @@
   margin-bottom: 20px;
 }
 
-.date-filter select {
-  padding: 8px 30px 8px 15px;
-  border: 1px solid #ddd;
-  border-radius: 25px;
-  font-size: 14px;
+/* Scrollable container for audit logs */
+.scrollable-audit-logs {
+  max-height: 300px;
+  overflow-y: auto;
   background-color: white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 15px center;
-  background-size: 12px;
-  cursor: pointer;
-  transition: all 0.3s;
-  min-width: 140px;
+  border-radius: 0; /* Remove border radius */
+  box-shadow: none; /* Remove box shadow */
 }
 
-.date-filter select:focus {
-  outline: none;
-  border-color: #dd4f05;
-  box-shadow: 0 0 0 2px rgba(221, 79, 5, 0.1);
+/* Audit log table styles */
+.audit-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 0; /* Remove any top margin */
+}
+
+.audit-log-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: white;
+}
+
+.audit-log-table th {
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #e84d1c;
+  border-bottom: 2px solid #eee;
+  white-space: nowrap;
+}
+
+.audit-log-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  color: #333;
+}
+
+/* Employee cell styling in audit log table */
+.employee-cell {
+  padding: 12px 15px;
+}
+
+.employee-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.employee-name {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.employee-id {
+  font-size: 12px;
+  color: #666;
+}
+
+.audit-log-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status styles */
+.temporary {
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 20px;
+  background-color: #ffefd0;
+  color: #e8a41c;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.25) inset;
+}
+
+.permanent {
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 20px;
+  background-color: #ffe8e0;
+  color: #e84d1c;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.25) inset;
+}
+
+.reactivation {
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 20px;
+  background-color: #d1ffdb;
+  color: #2e7d32;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.25) inset;
+}
+
+/* Glossy effect for status badges */
+.temporary::before,
+.permanent::before,
+.reactivation::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 20px 20px 0 0;
 }
 
 /* Responsive adjustments */
@@ -648,12 +711,78 @@
   }
 }
 
+/* Date filter styling to match search box */
+.date-filter {
+  position: relative;
+  width: 200px;
+}
 
+.date-filter label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: #666;
+}
 
+.date-filter select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-size: 14px;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
 
+.date-filter select:focus {
+  outline: none;
+  border-color: #dd4f05;
+  box-shadow: 0 0 0 2px rgba(221, 79, 5, 0.1);
+}
 
+/* Empty history state */
+.empty-history-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  text-align: center;
+}
 
+.empty-icon {
+  width: 60px;
+  height: 60px;
+  background-color: #e9ecef;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+}
 
+.empty-icon i {
+  font-size: 24px;
+  color: #6c757d;
+}
+
+.empty-history-state h3 {
+  margin: 0 0 10px 0;
+  color: #343a40;
+}
+
+.empty-history-state p {
+  margin: 0;
+  color: #6c757d;
+  max-width: 300px;
+}
 
 
 

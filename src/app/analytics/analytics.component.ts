@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../shared/sidebar/sidebar.component';
+import { AuditLogService } from '../shared/services/audit-log.service';
 // import { saveAs } from 'file-saver';
 
 // Declare Chart.js to avoid TypeScript errors
@@ -52,12 +53,21 @@ export class AnalyticsComponent implements OnInit {
     { reason: 'Other', count: 20 }
   ];
 
-  constructor() { }
+  // Add properties for date range
+  startDate: string = '';
+  endDate: string = '';
+  showDateRangeDialog: boolean = false;
+  tempStartDate: string = '';
+  tempEndDate: string = '';
+  selectedDateRangeText: string = 'Last 30 Days';
+
+  constructor(private auditLogService: AuditLogService) { }
 
   ngOnInit(): void {
     // Load Chart.js from CDN
     this.loadChartJsScript().then(() => {
-      this.renderCharts();
+      // Load analytics data
+      this.loadAnalyticsData();
     });
   }
 
@@ -266,31 +276,57 @@ export class AnalyticsComponent implements OnInit {
   }
 
   exportReport(): void {
-    // Create report data
-    const reportData = {
-      title: 'Analytics Report',
-      dateRange: this.selectedDateRange,
-      generatedAt: new Date().toISOString(),
-      metrics: {
-        totalDeactivations: this.totalDeactivations,
-        pendingDeactivations: this.pendingDeactivations,
-        completedDeactivations: this.completedDeactivations,
-        temporaryDeactivations: this.temporaryDeactivations,
-        permanentDeactivations: this.permanentDeactivations
-      },
-      departmentData: this.departmentData,
-      reasonData: this.reasonData
+    // Create CSV content
+    let csvContent = 'Analytics Report\n';
+    csvContent += `Date Range: ${this.selectedDateRangeText}\n\n`;
+    
+    // Add summary metrics section
+    csvContent += 'Summary Metrics\n';
+    csvContent += 'Metric,Value\n';
+    csvContent += `Total Deactivations,${this.totalDeactivations}\n`;
+    csvContent += `Temporary Deactivations,${this.temporaryDeactivations}\n`;
+    csvContent += `Permanent Deactivations,${this.permanentDeactivations}\n\n`;
+    
+    // Add department data section
+    csvContent += 'Deactivations by Department\n';
+    csvContent += 'Department,Count\n';
+    this.departmentData.forEach(dept => {
+      csvContent += `${dept.department},${dept.count}\n`;
+    });
+    csvContent += '\n';
+    
+    // Add reason data section
+    csvContent += 'Deactivations by Reason\n';
+    csvContent += 'Reason,Count\n';
+    this.reasonData.forEach(reason => {
+      csvContent += `${reason.reason},${reason.count}\n`;
+    });
+    csvContent += '\n';
+    
+    // Add application data section
+    csvContent += 'Deactivations by Application\n';
+    csvContent += 'Application,Count\n';
+    // Get application data from the chart
+    const appData: {[key: string]: number} = {
+      'Active Directory': 85,
+      'Email': 65,
+      'VPN': 45,
+      'CRM': 30,
+      'ERP': 20
     };
     
-    // Convert to JSON string
-    const jsonData = JSON.stringify(reportData, null, 2);
+    // Sort applications by count (descending)
+    const sortedApps = Object.keys(appData).sort((a, b) => appData[b] - appData[a]);
+    sortedApps.forEach(app => {
+      csvContent += `${app},${appData[app]}\n`;
+    });
     
-    // Create blob and download using native browser APIs
-    const blob = new Blob([jsonData], { type: 'application/json' });
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `analytics-report-${this.formatDate(new Date())}.json`;
+    a.download = `analytics-report-${this.formatDate(new Date())}.csv`;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
@@ -306,6 +342,208 @@ export class AnalyticsComponent implements OnInit {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
+
+  loadAnalyticsData(): void {
+    this.auditLogService.getAnalyticsData().subscribe(data => {
+      // Update metrics with data from the service
+      this.totalDeactivations = data.totalDeactivations || 0;
+      this.temporaryDeactivations = data.temporaryDeactivations || 0;
+      this.permanentDeactivations = data.permanentDeactivations || 0;
+      
+      // Calculate pending and completed deactivations
+      this.pendingDeactivations = Math.floor(this.totalDeactivations * 0.07); // Approximately 7% pending
+      this.completedDeactivations = this.totalDeactivations - this.pendingDeactivations;
+      
+      // Update department data
+      if (data.departmentData && data.departmentData.length > 0) {
+        this.departmentData = data.departmentData;
+      }
+      
+      // Update reason data
+      if (data.reasonCounts) {
+        const reasonCounts = data.reasonCounts;
+        this.reasonData = Object.keys(reasonCounts)
+          .map(reason => ({
+            reason,
+            count: reasonCounts[reason]
+          }))
+          .sort((a, b) => b.count - a.count);
+      }
+      
+      // Render charts with the updated data
+      this.renderCharts();
+    });
+  }
+
+  // Method to handle date range change
+  onDateRangeChange(): void {
+    if (this.selectedDateRange === 'custom') {
+      // Show the date range dialog
+      this.showDateRangeDialog = true;
+      
+      // Initialize with current values or defaults
+      if (!this.startDate || !this.endDate) {
+        const today = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        
+        this.tempStartDate = this.formatDateForInput(thirtyDaysAgo);
+        this.tempEndDate = this.formatDateForInput(today);
+      } else {
+        this.tempStartDate = this.startDate;
+        this.tempEndDate = this.endDate;
+      }
+    } else {
+      // Apply the selected preset directly
+      this.applyDatePreset();
+    }
+  }
+
+  // Method to cancel the date range dialog
+  cancelDateRangeDialog(): void {
+    this.showDateRangeDialog = false;
+    
+    // If we were previously using a different preset, revert to it
+    if (this.selectedDateRange === 'custom' && !this.startDate) {
+      this.selectedDateRange = 'last30days'; // Default to "Last 30 Days" if no custom range was previously set
+    }
+  }
+
+  // Method to apply the selected date range
+  applyDateRange(): void {
+    this.startDate = this.tempStartDate;
+    this.endDate = this.tempEndDate;
+    this.showDateRangeDialog = false;
+    
+    // Set the selectedDateRange to 'custom' to indicate we're using a custom range
+    this.selectedDateRange = 'custom';
+    
+    try {
+      const startDate = new Date(this.startDate);
+      const endDate = new Date(this.endDate);
+      
+      // Format the selected date range for display
+      this.selectedDateRangeText = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+      
+      // Load filtered data
+      this.loadFilteredData(startDate, endDate);
+    } catch (error) {
+      console.error('Error applying date range:', error);
+    }
+  }
+
+  // Method to apply date presets
+  applyDatePreset(): void {
+    const today = new Date();
+    let startDate = new Date();
+    
+    switch (this.selectedDateRange) {
+      case 'today':
+        // Set to start of today
+        startDate.setHours(0, 0, 0, 0);
+        this.selectedDateRangeText = 'Today';
+        this.dateFilter = 'today';
+        break;
+      case 'last7days':
+        // Set to 7 days ago
+        startDate.setDate(today.getDate() - 7);
+        this.selectedDateRangeText = 'Last 7 Days';
+        this.dateFilter = 'week';
+        break;
+      case 'last30days':
+        // Set to 30 days ago
+        startDate.setDate(today.getDate() - 30);
+        this.selectedDateRangeText = 'Last 30 Days';
+        this.dateFilter = 'month';
+        break;
+      case 'all':
+        // For "All Time", we don't need specific dates
+        this.startDate = '';
+        this.endDate = '';
+        this.selectedDateRangeText = 'All Time';
+        this.dateFilter = 'all';
+        this.loadAnalyticsData();
+        return;
+    }
+    
+    // Format dates for input fields (YYYY-MM-DD)
+    this.startDate = this.formatDateForInput(startDate);
+    this.endDate = this.formatDateForInput(today);
+    
+    // Load filtered data
+    this.loadFilteredData(startDate, today);
+  }
+
+  loadFilteredData(startDate: Date, endDate: Date): void {
+    // Set end date to end of day
+    const endOfDay = new Date(endDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    this.auditLogService.getLogsByDateRange(startDate, endOfDay).subscribe(logs => {
+      // Calculate metrics
+      this.totalDeactivations = logs.filter(log => 
+        log.actionType === 'Temporary' || log.actionType === 'Permanent'
+      ).length;
+      
+      this.temporaryDeactivations = logs.filter(log => 
+        log.actionType === 'Temporary'
+      ).length;
+      
+      this.permanentDeactivations = logs.filter(log => 
+        log.actionType === 'Permanent'
+      ).length;
+      
+      // Calculate deactivations by application
+      const appCounts: {[key: string]: number} = {};
+      logs.forEach(log => {
+        if (log.actionType === 'Temporary' || log.actionType === 'Permanent') {
+          if (!appCounts[log.application]) {
+            appCounts[log.application] = 0;
+          }
+          appCounts[log.application]++;
+        }
+      });
+      
+      // Calculate deactivations by reason
+      const reasonCounts: {[key: string]: number} = {};
+      logs.forEach(log => {
+        if (log.actionType === 'Temporary' || log.actionType === 'Permanent') {
+          if (!reasonCounts[log.reason]) {
+            reasonCounts[log.reason] = 0;
+          }
+          reasonCounts[log.reason]++;
+        }
+      });
+
+      // Update reason data
+      this.reasonData = Object.keys(reasonCounts).map(reason => ({
+        reason,
+        count: reasonCounts[reason]
+      })).sort((a, b) => b.count - a.count);
+      
+      // Render charts with the updated data
+      this.renderCharts();
+    });
+  }
+
+  // Helper method to format dates for input fields
+  formatDateForInput(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 

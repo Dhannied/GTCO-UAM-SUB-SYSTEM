@@ -129,11 +129,9 @@
 /* Search and filters */
 .search-filters {
   display: flex;
-  align-self: center;
-  justify-content: left;
-  margin-top: 20px;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
-  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .search-box {
@@ -186,7 +184,7 @@
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   overflow: hidden;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .employees-table {
@@ -294,12 +292,12 @@
   transform: translateY(1px);
 }
 
-/* Pagination */
+/* Pagination styles */
 .pagination {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 0;
+  margin-top: 20px;
 }
 
 .pagination-info {
@@ -317,18 +315,19 @@
   height: 36px;
   border: 1px solid #ddd;
   background-color: white;
-  border-radius: 4px;
+  border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s;
+  font-size: 14px;
+  color: #333;
 }
 
 .pagination-btn.active {
-  background-color: #e84d1c;
+  background-color: #dd4f05;
   color: white;
-  border-color: #e84d1c;
+  border-color: #dd4f05;
 }
 
 .pagination-btn:hover:not(.active):not(:disabled) {
@@ -336,7 +335,7 @@
 }
 
 .pagination-btn:disabled {
-  opacity: 0.5;
+  color: #ccc;
   cursor: not-allowed;
 }
 
@@ -414,5 +413,573 @@
   z-index: 1;
 }
 
+/* Status badge styles */
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  background-color: #e6f7ed;
+  color: #0d9d58;
+}
+
+.status-badge.inactive {
+  background-color: #feeae6;
+  color: #ea4335;
+}
+
+.status-badge.pending {
+  background-color: #fff8e1;
+  color: #f9a825;
+}
+
+/* Bulk Deactivation Button */
+.bulk-deactivate-btn {
+  background-color: #dd4f05;
+  color: #ffffff;
+  border-radius: 25px;
+  padding: 10px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: none;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.bulk-deactivate-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 25px 25px 0 0;
+}
+
+.bulk-deactivate-btn:hover {
+  background-color: #FF5A1F;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.bulk-deactivate-btn:disabled {
+  background-color: #f1a28e;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bulk-deactivate-btn i {
+  font-size: 14px;
+  margin-right: 5px;
+}
+
+/* Checkbox cell */
+.checkbox-cell {
+  width: 40px;
+  text-align: center;
+}
+
+.employee-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Search and Filters - Updated to include bulk deactivation button */
+.search-filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Bulk Deactivation Modal Styles */
+.bulk-deactivation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+}
+
+.modal-content {
+  position: relative;
+  width: 600px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1002;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.deactivation-step {
+  margin-bottom: 20px;
+}
+
+.deactivation-step h3 {
+  font-size: 16px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+}
+
+.deactivation-options {
+  display: flex;
+  gap: 20px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-fields {
+  display: flex;
+  gap: 15px;
+}
+
+.date-field {
+  flex: 1;
+}
+
+.date-field label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: #666;
+}
+
+.date-field input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.selected-employees-summary {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.selected-employees-list {
+  margin-top: 10px;
+}
+
+.selected-employee {
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 14px;
+}
+
+.selected-employees-count {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.view-all-btn {
+  background: none;
+  border: none;
+  color: #dd4f05;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: underline;
+}
+
+.all-selected-employees {
+  margin-top: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid #eee;
+}
+
+.cancel-btn {
+  background-color: #f5f5f5;
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.confirm-btn {
+  background-color: #dd4f05;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.confirm-btn:disabled {
+  background-color: #f1a28e;
+  cursor: not-allowed;
+}
+
+/* Main container styles */
+:host {
+  display: block;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+/* Search and filters */
+.search-filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-box {
+  position: relative;
+  width: 300px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  font-size: 14px;
+  outline: none;
+}
+
+.search-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+/* Selection mode info */
+.selection-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #333;
+}
+
+.cancel-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 5px 10px;
+}
+
+/* Continue with Selected button - styled like export button */
+.continue-btn {
+  background-color: #dd4f05;
+  color: #ffffff;
+  border-radius: 25px;
+  padding: 10px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: none;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover effect */
+.continue-btn:hover {
+  background-color: #FF5A1F;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Active/pressed effect */
+.continue-btn:active {
+  background-color: #E06A2B;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transform: translateY(1px);
+}
+
+/* Focus effect */
+.continue-btn:focus {
+  outline: none;
+  background-color: #FF5A1F;
+}
+
+/* Add glossy effect with a separate element */
+.continue-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 25px 25px 0 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Disabled state */
+.continue-btn:disabled {
+  background-color: #f1a28e;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Bulk deactivation button */
+.bulk-deactivate-btn {
+  background-color: #dd4f05;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Employees table */
+.employees-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.employees-table th {
+  text-align: left;
+  padding: 15px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #dd4f05;
+  border-bottom: 1px solid #eee;
+}
+
+.employees-table td {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.checkbox-cell {
+  width: 40px;
+  text-align: center;
+}
+
+.employee-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.employee-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.employee-initials {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #dd4f05;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.employee-name {
+  font-weight: 500;
+}
+
+.view-btn {
+  background-color: #dd4f05;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 6px 15px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: #666;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 5px;
+}
+
+/* Bulk Deactivation Button in header */
+.header-action-btn.bulk-deactivate-btn {
+  background-color: #dd4f05;
+  color: #ffffff;
+  border-radius: 25px;
+  padding: 10px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: none;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  /* Reset any potential background issues */
+  background-image: none;
+  box-sizing: border-box;
+}
+
+.header-action-btn.bulk-deactivate-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 25px 25px 0 0;
+}
+
+.header-action-btn.bulk-deactivate-btn:hover {
+  background-color: #FF5A1F;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.header-action-btn.bulk-deactivate-btn:disabled {
+  background-color: #f1a28e;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-action-btn.bulk-deactivate-btn i {
+  font-size: 14px;
+}
 
 

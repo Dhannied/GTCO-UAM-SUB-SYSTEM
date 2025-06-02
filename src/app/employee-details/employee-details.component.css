@@ -420,15 +420,17 @@
   margin-top: 10px;
 }
 
-/* Audit Log Header with Filter */
-.audit-header-container {
+/* Add header with filters styling */
+.header-with-filters {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
   margin-bottom: 20px;
 }
 
-.audit-header-container h2 {
+.header-with-filters h2 {
   margin: 0;
   font-size: 20px;
   color: #333;
@@ -439,25 +441,57 @@
   align-items: center;
 }
 
+.date-filter {
+  position: relative;
+  width: 200px;
+}
+
 .date-filter select {
-  padding: 8px 30px 8px 15px;
+  width: 100%;
+  padding: 8px 12px;
+  padding-right: 35px; /* Add extra padding on the right for the icon */
   border: 1px solid #ddd;
-  border-radius: 5px;
+  border-radius: 20px;
   font-size: 14px;
   background-color: white;
-  color: #333;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px;
+  background-position: right 12px center;
+  background-size: 16px;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .date-filter select:focus {
   outline: none;
+  border-color: #dd4f05;
+  box-shadow: 0 0 0 2px rgba(221, 79, 5, 0.1);
+}
+
+/* Fix the hover style to keep the dropdown arrow in the same position */
+.date-filter select:hover {
   border-color: #e84d1c;
-  box-shadow: 0 0 0 2px rgba(232, 77, 28, 0.2);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  /* Keep the same background image and position */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+/* Remove any conflicting hover styles */
+.audit-filters .date-filter select:hover {
+  background-color: white;
+  border-color: #e84d1c;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  /* Keep the same background image and position */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
 }
 
 /* Style for the select options */
@@ -465,42 +499,6 @@
   padding: 10px;
   background-color: white; /* White background for dropdown options */
   color: #333;
-}
-
-/* Hover effect */
-.date-filter select:hover {
-  background-color: #FF5A1F;
-  background-image: 
-    linear-gradient(to bottom, 
-      rgba(255, 255, 255, 0.4) 0%, 
-      rgba(255, 255, 255, 0) 50%,
-      rgba(0, 0, 0, 0.1) 100%),
-    url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat, no-repeat;
-  background-position: center, right 15px center;
-  background-size: 100% 100%, 12px;
-  box-shadow: 
-    0 3px 6px rgba(0, 0, 0, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.4) inset;
-  transform: translateY(-1px);
-}
-
-/* Focus effect */
-.date-filter select:focus {
-  outline: none;
-  background-color: #FF5A1F;
-  background-image: 
-    linear-gradient(to bottom, 
-      rgba(255, 255, 255, 0.4) 0%, 
-      rgba(255, 255, 255, 0) 50%,
-      rgba(0, 0, 0, 0.1) 100%),
-    url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat, no-repeat;
-  background-position: center, right 15px center;
-  background-size: 100% 100%, 12px;
-  box-shadow: 
-    0 
-    0 0 2px rgba(232, 77, 28, 0.2);
 }
 
 .audit-table {
@@ -781,6 +779,23 @@
 .confirm-btn:hover {
   background-color: #d04418;
 }
+
+/* Permanently deactivated text */
+.permanently-deactivated-text {
+  color: #888;
+  font-size: 14px;
+  font-style: italic;
+}
+
+.permanently-deactivated-text:hover {
+  color: #888;
+}
+
+
+
+
+
+
 
 
 

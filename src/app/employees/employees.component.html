@@ -6,97 +6,218 @@
   <div class="main-content">
     <!-- Header -->
     <div class="employees-header">
-      <h1>Employee <span class="highlight">Management</span></h1>
+      <h1>Employee <span style="color: #dd4f05;">Management</span></h1>
     </div>
     
-    <!-- Search and Filters -->
+    <!-- Search and Selection Controls -->
     <div class="search-filters">
       <div class="search-box">
-        <i class="fas fa-search search-icon" style="font-size: 16px; opacity: 1;"></i>
         <input 
           type="text" 
           placeholder="Search employees..." 
           [(ngModel)]="searchTerm"
+          (input)="applyFilters()"
         >
+        <i class="fas fa-search search-icon"></i>
       </div>
+      
+      <!-- Selection Mode Info -->
+      <div *ngIf="bulkSelectionMode" class="selection-info">
+        {{ getSelectedEmployeesCount() }} employees selected
+        <button class="cancel-btn" (click)="cancelBulkDeactivation()">Cancel</button>
+        <button class="continue-btn" [disabled]="!hasSelectedEmployees()" (click)="continueWithSelectedEmployees()">
+          Continue with Selected
+        </button>
+      </div>
+      
+      <!-- Bulk Deactivation Button (when not in selection mode) -->
+      <button *ngIf="!bulkSelectionMode" class="bulk-deactivate-btn header-action-btn" (click)="openBulkDeactivationModal()">
+        Bulk Deactivation
+      </button>
     </div>
 
     <!-- Employees Table -->
-    <div class="employees-table-container">
-      @if (paginatedEmployees.length > 0) {
-        <table class="employees-table">
-          <thead>
-            <tr>
-              <th>EMPLOYEE</th>
-              <th>EMPLOYEE ID</th>
-              <th>DEPARTMENT</th>
-              <th>POSITION</th>
-              <th>ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (employee of paginatedEmployees; track employee.id) {
-              <tr>
-                <td class="employee-cell">
-                  @if (employee.photo) {
-                    <img [src]="employee.photo" alt="{{ employee.name }}" class="employee-avatar">
-                  } @else {
-                    <div class="employee-initials">{{ getInitials(employee.name) }}</div>
-                  }
-                  <span class="employee-name">{{ employee.name }}</span>
-                </td>
-                <td>{{ employee.id }}</td>
-                <td>{{ employee.department }}</td>
-                <td>{{ employee.position }}</td>
-                <td>
-                  <button class="view-btn" (click)="viewEmployee(employee.id)">
-                    <span>View</span>
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      } @else {
-        <div class="not-found">
-          <h2>No employees found</h2>
-          <p>No employees match your search criteria. Please try a different search term.</p>
-          <button class="clear-search-btn" (click)="clearSearch()">Clear Search</button>
-        </div>
-      }
-    </div>
-    
+    <table class="employees-table">
+      <thead>
+        <tr>
+          <th class="checkbox-cell">
+            <input 
+              *ngIf="bulkSelectionMode"
+              type="checkbox" 
+              [checked]="areAllEmployeesSelected()" 
+              (change)="toggleAllEmployees()"
+              class="employee-checkbox"
+            >
+          </th>
+          <th class="employee-header">EMPLOYEE</th>
+          <th>EMPLOYEE ID</th>
+          <th>DEPARTMENT</th>
+          <th>POSITION</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let employee of paginatedEmployees">
+          <td class="checkbox-cell">
+            <input 
+              *ngIf="bulkSelectionMode"
+              type="checkbox" 
+              [(ngModel)]="employee.selected" 
+              class="employee-checkbox"
+            >
+          </td>
+          <td class="employee-cell">
+            <div class="employee-initials" [style.background-color]="'#dd4f05'">
+              {{ getInitials(employee.name) }}
+            </div>
+            <span class="employee-name">{{ employee.name }}</span>
+          </td>
+          <td>{{ employee.employeeId || employee.id }}</td>
+          <td>{{ employee.department }}</td>
+          <td>{{ employee.position }}</td>
+          <td>
+            <button class="view-btn" (click)="viewEmployee(employee.id)">View</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
     <!-- Pagination -->
     <div class="pagination">
       <div class="pagination-info">
-        Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to 
-        {{ Math.min(currentPage * itemsPerPage, filteredEmployees.length) }} of 
-        {{ filteredEmployees.length }} employees
+        Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ Math.min(currentPage * itemsPerPage, filteredEmployees.length) }} of {{ filteredEmployees.length }} employees
       </div>
       <div class="pagination-controls">
         <button class="pagination-btn" (click)="previousPage()" [disabled]="currentPage === 1">
-          <i class="fas fa-chevron-left" style="font-size: 14px;"></i>
+          <i class="fas fa-chevron-left"></i>
         </button>
         
-        @for (page of [1, 2, 3, 4, 5]; track page) {
-          @if (page <= totalPages) {
-            <button 
-              class="pagination-btn" 
-              [class.active]="currentPage === page"
-              (click)="goToPage(page)"
-            >
-              {{ page }}
-            </button>
-          }
-        }
+        <ng-container *ngFor="let page of [1, 2, 3, 4, 5]">
+          <button 
+            *ngIf="page <= totalPages"
+            class="pagination-btn" 
+            [class.active]="currentPage === page"
+            (click)="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+        </ng-container>
         
         <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
-          <i class="fas fa-chevron-right" style="font-size: 14px;"></i>
+          <i class="fas fa-chevron-right"></i>
         </button>
       </div>
     </div>
   </div>
 </div>
+
+
+<!-- Bulk Deactivation Modal -->
+<div class="bulk-deactivation-modal" *ngIf="showBulkDeactivationModal">
+  <div class="modal-backdrop" (click)="cancelBulkDeactivation()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Bulk Deactivate Application Access</h2>
+      <button class="close-modal-btn" (click)="cancelBulkDeactivation()">×</button>
+    </div>
+    
+    <div class="modal-body">
+      <p>You are about to deactivate application access for <strong>{{ getSelectedEmployeesCount() }}</strong> employees.</p>
+      
+      <!-- Step 1: Select Application -->
+      <div class="deactivation-step">
+        <h3>Step 1: Select Application</h3>
+        <div class="select-wrapper">
+          <select [(ngModel)]="selectedApplication">
+            <option value="">Select an application</option>
+            <option *ngFor="let app of availableApplications" [value]="app">{{ app }}</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Step 2: Select Deactivation Type -->
+      <div class="deactivation-step">
+        <h3>Step 2: Select Deactivation Type</h3>
+        <div class="deactivation-options">
+          <div class="option">
+            <input type="radio" id="bulk-temporary" name="bulkDeactivationType" 
+                   [(ngModel)]="bulkDeactivationType" value="Temporary">
+            <label for="bulk-temporary">Temporary Deactivation</label>
+          </div>
+          
+          <div class="option">
+            <input type="radio" id="bulk-permanent" name="bulkDeactivationType" 
+                   [(ngModel)]="bulkDeactivationType" value="Permanent">
+            <label for="bulk-permanent">Permanent Deactivation</label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Step 3: Select Date Range (only for temporary deactivation) -->
+      <div class="deactivation-step" *ngIf="bulkDeactivationType === 'Temporary'">
+        <h3>Step 3: Select Date Range</h3>
+        <div class="date-fields">
+          <div class="date-field">
+            <label for="bulk-start-date">Start Date</label>
+            <input type="date" id="bulk-start-date" [(ngModel)]="bulkStartDate">
+          </div>
+          
+          <div class="date-field">
+            <label for="bulk-end-date">End Date</label>
+            <input type="date" id="bulk-end-date" [(ngModel)]="bulkEndDate">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Step 4: Select Reason -->
+      <div class="deactivation-step">
+        <h3>Step {{ bulkDeactivationType === 'Temporary' ? '4' : '3' }}: Select Reason</h3>
+        <div class="reason-field">
+          <div class="select-wrapper">
+            <select [(ngModel)]="bulkDeactivationReason">
+              <option value="">Select a reason</option>
+              <option *ngFor="let reason of getReasonOptions()" [value]="reason">{{ reason }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Selected Employees Summary -->
+      <div class="selected-employees-summary">
+        <h3>Selected Employees ({{ getSelectedEmployeesCount() }})</h3>
+        <div class="selected-employees-list" *ngIf="getSelectedEmployeesCount() <= 5">
+          <div *ngFor="let employee of getSelectedEmployees()" class="selected-employee">
+            {{ employee.name }} ({{ employee.id }})
+          </div>
+        </div>
+        <div class="selected-employees-count" *ngIf="getSelectedEmployeesCount() > 5">
+          {{ getSelectedEmployeesCount() }} employees selected
+          <button class="view-all-btn" (click)="toggleViewAllEmployees()">
+            {{ viewAllSelectedEmployees ? 'Hide' : 'View All' }}
+          </button>
+        </div>
+        <div class="all-selected-employees" *ngIf="viewAllSelectedEmployees && getSelectedEmployeesCount() > 5">
+          <div *ngFor="let employee of getSelectedEmployees()" class="selected-employee">
+            {{ employee.name }} ({{ employee.id }})
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="cancel-btn" (click)="cancelBulkDeactivation()">Cancel</button>
+      <button 
+        class="confirm-btn" 
+        (click)="confirmBulkDeactivation()"
+        [disabled]="!isBulkDeactivationValid()"
+      >
+        Confirm Deactivation
+      </button>
+    </div>
+  </div>
+</div>
+
+
 
 
 

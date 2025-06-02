@@ -1,17 +1,6 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-export interface AuditLog {
-  id?: string;
-  date: string;
-  employee?: string;
-  employeeId?: string;
-  application: string;
-  actionType: 'Temporary' | 'Permanent' | 'Reactivation';
-  duration?: string;
-  reason: string;
-  officer: string;
-}
+import { AuditLog } from '../models/audit-log.model';
 
 @Component({
   selector: 'app-audit-log-table',
@@ -20,95 +9,101 @@ export interface AuditLog {
   templateUrl: './audit-log-table.component.html',
   styleUrls: ['./audit-log-table.component.css']
 })
-export class AuditLogTableComponent implements OnInit, OnChanges {
+export class AuditLogTableComponent implements OnChanges {
   @Input() logs: AuditLog[] = [];
   @Input() showEmployee: boolean = true;
   @Input() showReason: boolean = true;
   @Input() showDuration: boolean = true;
-  @Input() showPagination: boolean = false;
-  @Input() itemsPerPage: number = 10;
-  @Input() currentPage: number = 1;
-  @Input() totalItems: number = 0;
-  @Input() maxHeight: string = '400px'; // Default max height
-  @Input() userId: string = ''; // Add userId input
   @Input() showOfficer: boolean = true;
+  @Input() showPagination: boolean = true;
+  @Input() maxHeight: string = 'none'; // Default to 'none' instead of a fixed height
   
+  // Pagination
+  @Input() itemsPerPage: number = 10;
+  currentPage: number = 1;
+  totalPages: number = 1;
   paginatedLogs: AuditLog[] = [];
   
-  Math = Math; // For template calculations
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['logs']) {
+      this.updatePagination();
+    }
+  }
   
-  constructor() { }
-  
-  ngOnInit(): void {
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.logs.length / this.itemsPerPage);
+    if (this.totalPages === 0) this.totalPages = 1;
+    
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = this.totalPages;
+    }
+    
     this.updatePaginatedLogs();
   }
   
-  // Add ngOnChanges to detect when inputs change
-  ngOnChanges(changes: SimpleChanges): void {
-    console.log('Audit log table inputs changed:', changes);
-    if (changes['logs'] || changes['currentPage'] || changes['itemsPerPage']) {
-      this.updatePaginatedLogs();
-    }
-  }
-  
-  // Add pagination methods
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.updatePaginatedLogs();
-    }
-  }
-  
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.updatePaginatedLogs();
-    }
-  }
-  
-  get totalPages(): number {
-    return Math.ceil(this.totalItems / this.itemsPerPage);
-  }
-  
-  private getMockLogsForUser(userId: string): AuditLog[] {
-    // Mock implementation - return some sample logs for the user
-    return [
-      {
-        date: '15 Jun 2025, 14:32',
-        application: 'Core Banking',
-        actionType: 'Temporary',
-        duration: '14 days',
-        reason: 'Employee on leave',
-        officer: 'Sarah James'
-      },
-      {
-        date: '10 May 2025, 09:15',
-        application: 'Business Intelligence',
-        actionType: 'Permanent',
-        reason: 'Role change',
-        officer: 'Robert Wilson'
-      },
-      {
-        date: '05 May 2025, 11:20',
-        application: 'Customer Relationship',
-        actionType: 'Reactivation',
-        reason: 'Access review approval',
-        officer: 'Thomas Anderson'
-      }
-    ];
-  }
-  
-  private updatePaginatedLogs(): void {
-    console.log('Updating paginated logs with:', this.logs.length, 'logs');
+  updatePaginatedLogs(): void {
     if (this.showPagination) {
       const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-      this.paginatedLogs = this.logs.slice(startIndex, startIndex + this.itemsPerPage);
+      const endIndex = startIndex + this.itemsPerPage;
+      this.paginatedLogs = this.logs.slice(startIndex, endIndex);
     } else {
       this.paginatedLogs = this.logs;
     }
-    console.log('Paginated logs updated:', this.paginatedLogs.length, 'logs');
+  }
+  
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePaginatedLogs();
+    }
+  }
+  
+  getColspan(): number {
+    let count = 3; // Date, Application, Action Type are always shown
+    if (this.showEmployee) count++;
+    if (this.showDuration) count++;
+    if (this.showReason) count++;
+    if (this.showOfficer) count++;
+    return count;
+  }
+  
+  // Add this method to calculate and format the expiration date
+  getExpirationDate(log: AuditLog): string {
+    if (log.expirationDate) {
+      return log.expirationDate;
+    }
+    
+    if (!log.duration) {
+      return 'Unknown';
+    }
+    
+    // Parse the log date
+    const logDate = new Date(log.date);
+    
+    // Extract the number of days from the duration string
+    const durationMatch = log.duration.match(/(\d+)/);
+    if (!durationMatch) {
+      return log.duration; // Return original duration if parsing fails
+    }
+    
+    const days = parseInt(durationMatch[1], 10);
+    
+    // Calculate expiration date
+    const expirationDate = new Date(logDate);
+    expirationDate.setDate(logDate.getDate() + days);
+    
+    // Format the date as DD MMM YYYY
+    return expirationDate.toLocaleDateString('en-US', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
   }
 }
+
+
+
+
 
 
 

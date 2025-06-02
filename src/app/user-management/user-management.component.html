@@ -7,6 +7,9 @@
     <!-- Header -->
     <div class="user-management-header">
       <h1>User <span class="highlight">Management</span></h1>
+      <button class="add-user-btn" (click)="openAddUserModal()">
+        <i class="fas fa-plus"></i> Add User
+      </button>
     </div>
     
     <!-- Search and Filters -->
@@ -32,13 +35,7 @@
           </select>
         </div>
         
-        <div class="filter">
-          <select [(ngModel)]="statusFilter">
-            <option value="All Statuses">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-        </div>
+        <!-- Removed the status filter -->
       </div>
     </div>
 
@@ -51,7 +48,6 @@
             <th>ROLE</th>
             <th>DEPARTMENT</th>
             <th>LAST ACTIVE</th>
-            <th>STATUS</th>
             <th>ACTIONS</th>
           </tr>
         </thead>
@@ -70,11 +66,6 @@
             <td>{{ user.role }}</td>
             <td>{{ user.department }}</td>
             <td>{{ user.lastActive }}</td>
-            <td>
-              <span class="status-badge" [class.active]="user.status === 'Active'" [class.inactive]="user.status === 'Inactive'">
-                {{ user.status }}
-              </span>
-            </td>
             <td class="actions-cell">
               <!-- Option 1: Use routerLink directly -->
               <a [routerLink]="['/user-management/user', user.id]" class="view-btn">
@@ -135,6 +126,149 @@
 
 
 
+
+
+
+
+
+
+<!-- Add User Modal -->
+<div class="modal-overlay" *ngIf="showAddUserModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Add New UAM User</h2>
+      <button class="close-modal-btn" (click)="closeAddUserModal()">×</button>
+    </div>
+    
+    <div class="modal-body">
+      <form [formGroup]="addUserForm">
+        <!-- Employee Name with Auto-complete -->
+        <div class="form-group">
+          <label for="employeeName">Employee Name</label>
+          <div class="autocomplete-container">
+            <input 
+              type="text" 
+              id="employeeName" 
+              formControlName="name"
+              placeholder="Start typing employee name..."
+              (input)="searchEmployees()"
+            >
+            <div class="autocomplete-results" *ngIf="employeeSearchResults.length > 0">
+              <div 
+                *ngFor="let employee of employeeSearchResults" 
+                class="autocomplete-item"
+                (click)="selectEmployee(employee)"
+              >
+                {{ employee.name }} ({{ employee.id }})
+              </div>
+            </div>
+          </div>
+          <div class="error-message" *ngIf="addUserForm.get('name')?.invalid && addUserForm.get('name')?.touched">
+            Employee name is required
+          </div>
+        </div>
+        
+        <!-- Employee ID (auto-filled) -->
+        <div class="form-group">
+          <label for="employeeId">Employee ID</label>
+          <input 
+            type="text" 
+            id="employeeId" 
+            formControlName="id"
+            placeholder="ID will be auto-filled"
+            readonly
+          >
+        </div>
+        
+        <!-- Email -->
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input 
+            type="email" 
+            id="email" 
+            formControlName="email"
+            placeholder="Enter email address"
+          >
+          <div class="error-message" *ngIf="addUserForm.get('email')?.invalid && addUserForm.get('email')?.touched">
+            Valid email is required
+          </div>
+        </div>
+        
+        <!-- Department -->
+        <div class="form-group">
+          <label for="department">Department</label>
+          <select id="department" formControlName="department">
+            <option value="">Select Department</option>
+            <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+          </select>
+          <div class="error-message" *ngIf="addUserForm.get('department')?.invalid && addUserForm.get('department')?.touched">
+            Department is required
+          </div>
+        </div>
+        
+        <!-- UAM Role -->
+        <div class="form-group">
+          <label>UAM Role</label>
+          <div class="role-options">
+            <div class="role-option">
+              <input 
+                type="radio" 
+                id="roleOfficer" 
+                formControlName="role" 
+                value="Officer"
+                (change)="onRoleChange()"
+              >
+              <label for="roleOfficer">UAM Officer</label>
+            </div>
+            <div class="role-option">
+              <input 
+                type="radio" 
+                id="roleSupervisor" 
+                formControlName="role" 
+                value="Supervisor"
+                (change)="onRoleChange()"
+              >
+              <label for="roleSupervisor">UAM Supervisor</label>
+            </div>
+          </div>
+          <div class="error-message" *ngIf="addUserForm.get('role')?.invalid && addUserForm.get('role')?.touched">
+            Role selection is required
+          </div>
+        </div>
+        
+        <!-- Application Access (only for Officers) -->
+        <div class="form-group" *ngIf="addUserForm.get('role')?.value === 'Officer'">
+          <label>Authorized Applications</label>
+          <div class="apps-selection">
+            <div *ngFor="let app of availableApps" class="app-checkbox">
+              <input 
+                type="checkbox" 
+                [id]="'app-' + app.id" 
+                [value]="app.name"
+                (change)="toggleAppSelection(app.name)"
+              >
+              <label [for]="'app-' + app.id">{{ app.name }}</label>
+            </div>
+          </div>
+          <div class="error-message" *ngIf="isOfficerWithNoApps()">
+            At least one application must be selected for UAM Officers
+          </div>
+        </div>
+      </form>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="cancel-btn" (click)="closeAddUserModal()">Cancel</button>
+      <button 
+        class="submit-btn" 
+        [disabled]="addUserForm.invalid || isOfficerWithNoApps()"
+        (click)="addNewUser()"
+      >
+        Add User
+      </button>
+    </div>
+  </div>
+</div>
 
 
 

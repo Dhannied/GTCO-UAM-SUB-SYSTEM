@@ -58,99 +58,128 @@
 
     <!-- Application Access Section -->
     <div class="applications-section">
-      <div class="section-header">
-        <div class="header-with-search">
-          <h2>Application Access</h2>
-          <div class="app-search-box">
-            <i class="fas fa-search search-icon"></i>
-            <input 
-              type="text" 
-              placeholder="Search applications..." 
-              [(ngModel)]="appSearchTerm"
-              (input)="filterApplications()"
-            >
-            <button *ngIf="appSearchTerm" class="clear-search" (click)="clearAppSearch()">
-              <i class="fas fa-times"></i>
-            </button>
+      <div class="applications-table">
+        <!-- Move the header inside the applications-table container -->
+        <div class="section-header">
+          <div class="header-with-search">
+            <h2>Application Access</h2>
+            <div class="app-search-box">
+              <i class="fas fa-search search-icon"></i>
+              <input 
+                type="text" 
+                placeholder="Search applications..." 
+                [(ngModel)]="appSearchTerm"
+                (input)="filterApplications()"
+              >
+              <button class="clear-search" *ngIf="appSearchTerm" (click)="clearAppSearch()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      
-      <div class="applications-table">
-        <div class="table-header">
-          <div class="col application-col">Application</div>
-          <div class="col action-col">Action</div>
-        </div>
         
-        <div class="table-body">
-          @if (filteredApplications && filteredApplications.length > 0) {
-            @for (app of filteredApplications; track app.id) {
-              <div class="table-row">
-                <div class="col application-col">
-                  <div class="app-info">
-                    <div class="app-icon" [style.background-color]="app.iconBg">
-                      <i class="fas fa-{{ app.icon }}"></i>
-                    </div>
-                    <div class="app-details">
-                      <div class="app-name">{{ app.name }}</div>
-                      <div class="app-platform">{{ app.platform }}</div>
+        <div class="access-table">
+          <div class="access-header">
+            <div class="access-col application-col">Application</div>
+            <div class="access-col action-col">Action</div>
+          </div>
+          
+          <div class="table-body">
+            @if (filteredApplications && filteredApplications.length > 0) {
+              @for (app of filteredApplications; track app.id) {
+                <div class="access-row">
+                  <div class="access-col application-col">
+                    <div class="app-info">
+                      <div class="app-icon" [style.background-color]="app.iconBg">
+                        <i class="fas fa-{{ app.icon }}"></i>
+                      </div>
+                      <div class="app-details">
+                        <div class="app-name">{{ app.name }}</div>
+                        <div class="app-platform">{{ app.platform }}</div>
+                      </div>
                     </div>
                   </div>
+                  
+                  <div class="access-col action-col">
+                    @if (app.status === 'Active') {
+                      <button class="revoke-btn" (click)="revokeAccess(app.id)">
+                        Revoke
+                      </button>
+                    } @else {
+                      <button class="grant-btn" (click)="grantAccess(app.id)">
+                        Grant Access
+                      </button>
+                    }
+                  </div>
                 </div>
-                
-                <div class="col action-col">
-                  @if (app.status === 'Active') {
-                    <button class="revoke-btn" (click)="revokeAccess(app.id)">
-                      Revoke
-                    </button>
-                  } @else {
-                    <button class="grant-btn" (click)="grantAccess(app.id)">
-                      Grant Access
-                    </button>
-                  }
-                </div>
+              }
+            } @else {
+              <div class="no-applications">
+                @if (appSearchTerm) {
+                  <p>No applications match your search.</p>
+                } @else {
+                  <p>No applications found for this user.</p>
+                }
               </div>
             }
-          } @else {
-            <div class="no-applications">
-              @if (appSearchTerm) {
-                <p>No applications match your search.</p>
-              } @else {
-                <p>No applications found for this user.</p>
-              }
-            </div>
-          }
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Audit Log Section -->
-    <div class="audit-log-section">
-      <div class="section-header">
-        <div class="header-with-filters">
-          <h2>Deactivation History</h2>
-          <div class="date-filter">
-            <select [(ngModel)]="auditDateFilter" (change)="filterAuditLogs()">
-              <option value="all">All Time</option>
-              <option value="today">Today</option>
-              <option value="week">Last 7 Days</option>
-              <option value="month">Last 30 Days</option>
-              <option value="quarter">Last 90 Days</option>
-            </select>
+    <!-- Deactivation History Section -->
+    <div class="audit-section">
+      <div class="applications-table">
+        <div class="section-header">
+          <div class="header-with-filters">
+            <h2>Deactivation History</h2>
+            <div class="date-filter">
+              <label for="timeFilter">Filter by:</label>
+              <select id="timeFilter" [(ngModel)]="selectedTimeFilter" (change)="applyTimeFilter()">
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+              </select>
+            </div>
           </div>
         </div>
-      </div>
-      
-      <div class="audit-log-container">
-        <app-audit-log-table 
-          [logs]="filteredAuditLogs"
-          [showEmployee]="true"
-          [showReason]="true"
-          [showDuration]="true"
-          [showPagination]="false"
-          [showOfficer]="false"
-          [maxHeight]="'300px'"
-        ></app-audit-log-table>
+        
+        <div class="scrollable-audit-logs">
+          <table class="audit-log-table">
+            <thead>
+              <tr>
+                <th>Date / Time</th>
+                <th>Employee</th>
+                <th>Application</th>
+                <th>Action type</th>
+                <th>Expiration Date</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of filteredLogs">
+                <td>{{ log.date | date:'dd MMM yyyy, HH:mm' }}</td>
+                <td class="employee-cell">
+                  <div class="employee-info">
+                    <div class="employee-name">{{ log.employee }}</div>
+                    <div class="employee-id">{{ log.employeeId }}</div>
+                  </div>
+                </td>
+                <td>{{ log.application }}</td>
+                <td>
+                  <span class="{{ log.actionType.toLowerCase() }}">{{ log.actionType }}</span>
+                </td>
+                <td>{{ log.expirationDate ? (log.expirationDate | date:'MMM dd, yyyy') : 'Not Applicable' }}</td>
+                <td>{{ log.reason }}</td>
+              </tr>
+              <tr *ngIf="filteredLogs.length === 0">
+                <td colspan="6" class="empty-state">No deactivation history found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -160,6 +189,20 @@
 <!-- <div class="modal-overlay" *ngIf="showAccessModal">
   ...
 </div> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

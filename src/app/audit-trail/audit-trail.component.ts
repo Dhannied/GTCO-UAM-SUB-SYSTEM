@@ -1,20 +1,29 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { AuditLogService } from '../shared/services/audit-log.service';
+import { AuditLog } from '../shared/models/audit-log.model';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../shared/sidebar/sidebar.component';
-import { AuditLogTableComponent, AuditLog } from '../shared/audit-log-table/audit-log-table.component';
+import { AuditLogTableComponent } from '../shared/audit-log-table/audit-log-table.component';
 // import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-audit-trail',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, SidebarComponent, AuditLogTableComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA], // Use CUSTOM_ELEMENTS_SCHEMA instead
   templateUrl: './audit-trail.component.html',
   styleUrls: ['./audit-trail.component.css']
 })
 export class AuditTrailComponent implements OnInit {
+  // Math object for template
+  Math = Math;
+  
   searchTerm: string = '';
+  startDate: string = '';
+  endDate: string = '';
+  datePreset: string = 'all';
   dateFilter: string = 'all';
   actionTypeFilter: string = 'All Actions';
   applicationFilter: string = 'All Applications';
@@ -25,253 +34,13 @@ export class AuditTrailComponent implements OnInit {
   
   // Pagination
   currentPage: number = 1;
-  itemsPerPage: number = 10;
+  itemsPerPage: number = 8;  // Changed from 10 to 8
   
-  // All audit logs
-  auditLogs: AuditLog[] = [];
-  
-  // Get unique applications for filter dropdown
-  get uniqueApplications(): string[] {
-    const apps = this.auditLogs.map(log => log.application);
-    return [...new Set(apps)].sort();
-  }
-  
-  constructor(private cdr: ChangeDetectorRef) { }
-  
-  ngOnInit(): void {
-    // Initialize filter values
-    this.dateFilter = 'all';
-    this.actionTypeFilter = 'All Actions';
-    this.applicationFilter = 'All Applications';
-    this.officerFilter = 'All Officers';
-    
-    // Load data
-    this.loadAuditLogs();
-    
-    // Apply initial filters
-    this.applyFilters();
-    
-    // Log initial filter state
-    console.log('Initial filter state:', {
-      dateFilter: this.dateFilter,
-      actionTypeFilter: this.actionTypeFilter,
-      applicationFilter: this.applicationFilter,
-      officerFilter: this.officerFilter,
-      hasActiveFilters: this.hasActiveFilters()
-    });
-  }
-  
-  loadAuditLogs(): void {
-    // Mock data for audit logs - in a real app, this would come from a service
-    this.auditLogs = [
-      {
-        id: 'log1',
-        date: '15 Jun 2025, 14:32',
-        employee: 'John Doe',
-        employeeId: 'EMP-10045',
-        application: 'Core Banking',
-        actionType: 'Temporary',
-        duration: '14 days',
-        reason: 'Employee on leave',
-        officer: 'Sarah James'
-      },
-      {
-        id: 'log2',
-        date: '10 May 2025, 09:15',
-        employee: 'John Doe',
-        employeeId: 'EMP-10045',
-        application: 'Business Intelligence',
-        actionType: 'Permanent',
-        reason: 'Role change',
-        officer: 'Robert Wilson'
-      },
-      {
-        id: 'log3',
-        date: '05 May 2025, 11:20',
-        employee: 'John Doe',
-        employeeId: 'EMP-10045',
-        application: 'Business Intelligence',
-        actionType: 'Reactivation',
-        reason: 'Access review approval',
-        officer: 'Thomas Anderson'
-      },
-      {
-        id: 'log4',
-        date: '12 Jun 2025, 10:45',
-        employee: 'Phoenix Baker',
-        employeeId: 'EMP-10046',
-        application: 'HR Management',
-        actionType: 'Temporary',
-        duration: '30 days',
-        reason: 'System maintenance',
-        officer: 'Sarah James'
-      },
-      {
-        id: 'log5',
-        date: '20 May 2025, 16:30',
-        employee: 'Phoenix Baker',
-        employeeId: 'EMP-10046',
-        application: 'Core Banking',
-        actionType: 'Permanent',
-        reason: 'Department transfer',
-        officer: 'Robert Wilson'
-      },
-      {
-        id: 'log6',
-        date: '18 Jun 2025, 09:30',
-        employee: 'Lana Steiner',
-        employeeId: 'EMP-10047',
-        application: 'Core Banking',
-        actionType: 'Temporary',
-        duration: '7 days',
-        reason: 'Employee on leave',
-        officer: 'Thomas Anderson'
-      },
-      {
-        id: 'log7',
-        date: '15 Jun 2025, 11:45',
-        employee: 'Demi Wilkinson',
-        employeeId: 'EMP-10048',
-        application: 'IT Service Management',
-        actionType: 'Reactivation',
-        reason: 'Access review approval',
-        officer: 'Sarah James'
-      },
-      {
-        id: 'log8',
-        date: '10 Jun 2025, 14:20',
-        employee: 'Candice Wu',
-        employeeId: 'EMP-10049',
-        application: 'Financial Reporting',
-        actionType: 'Permanent',
-        reason: 'Security violation',
-        officer: 'Robert Wilson'
-      },
-      {
-        id: 'log9',
-        date: '05 Jun 2025, 16:15',
-        employee: 'Natali Craig',
-        employeeId: 'EMP-10050',
-        application: 'HR Management',
-        actionType: 'Temporary',
-        duration: '14 days',
-        reason: 'System maintenance',
-        officer: 'Thomas Anderson'
-      },
-      {
-        id: 'log10',
-        date: '01 Jun 2025, 10:30',
-        employee: 'Drew Cano',
-        employeeId: 'EMP-10051',
-        application: 'Core Banking',
-        actionType: 'Reactivation',
-        reason: 'Access review approval',
-        officer: 'Sarah James'
-      },
-      {
-        id: 'log11',
-        date: '28 May 2025, 09:45',
-        employee: 'Orlando Diggs',
-        employeeId: 'EMP-10052',
-        application: 'Cash Management',
-        actionType: 'Permanent',
-        reason: 'Role elimination',
-        officer: 'Robert Wilson'
-      },
-      {
-        id: 'log12',
-        date: '25 May 2025, 14:10',
-        employee: 'Andi Lane',
-        employeeId: 'EMP-10053',
-        application: 'Customer Relationship',
-        actionType: 'Temporary',
-        duration: '30 days',
-        reason: 'Department transfer',
-        officer: 'Thomas Anderson'
-      }
-    ];
-    
-    console.log('Loaded audit logs:', this.auditLogs.length);
-  }
-  
-  get filteredLogs() {
-    console.log('Filtering logs with criteria:', {
-      dateFilter: this.dateFilter,
-      actionTypeFilter: this.actionTypeFilter,
-      applicationFilter: this.applicationFilter,
-      officerFilter: this.officerFilter
-    });
-    
-    return this.auditLogs.filter(log => {
-      // Filter by search term
-      const matchesSearch = this.searchTerm === '' || 
-        (log.employee && log.employee.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
-        (log.employeeId && log.employeeId.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
-        (log.application && log.application.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
-        (log.reason && log.reason.toLowerCase().includes(this.searchTerm.toLowerCase()));
-      
-      // Filter by date
-      let matchesDate = true;
-      if (this.dateFilter !== 'all') {
-        try {
-          const now = new Date();
-          let cutoffDate = new Date();
-          
-          switch (this.dateFilter) {
-            case 'today':
-              cutoffDate.setHours(0, 0, 0, 0); // Start of today
-              break;
-            case 'week':
-              cutoffDate.setDate(now.getDate() - 7);
-              break;
-            case 'month':
-              cutoffDate.setDate(now.getDate() - 30);
-              break;
-            case 'quarter':
-              cutoffDate.setDate(now.getDate() - 90);
-              break;
-          }
-          
-          // Parse the date string properly
-          const dateParts = log.date.split(',')[0].split(' ');
-          const month = this.getMonthNumber(dateParts[1]);
-          const day = parseInt(dateParts[0]);
-          const year = parseInt(dateParts[2]);
-          const logDate = new Date(year, month, day);
-          
-          matchesDate = logDate >= cutoffDate;
-        } catch (error) {
-          console.error('Error parsing date:', log.date, error);
-          matchesDate = true; // Default to showing the log if date parsing fails
-        }
-      }
-      
-      // Filter by action type
-      const matchesActionType = this.actionTypeFilter === 'All Actions' || 
-        log.actionType === this.actionTypeFilter;
-      
-      // Filter by application
-      const matchesApplication = this.applicationFilter === 'All Applications' || 
-        log.application === this.applicationFilter;
-      
-      // Filter by officer (who performed the action)
-      const matchesOfficer = this.officerFilter === 'All Officers' || 
-        (this.officerFilter === 'Current User' && log.officer === this.currentUser) ||
-        log.officer === this.officerFilter;
-
-      return matchesSearch && matchesDate && matchesActionType && matchesApplication && matchesOfficer;
-    });
-  }
-  
-  get paginatedLogs(): AuditLog[] {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const paginatedData = this.filteredLogs.slice(startIndex, startIndex + this.itemsPerPage);
-    console.log('Paginated logs:', paginatedData.length, 'of', this.filteredLogs.length, 'filtered logs');
-    return paginatedData;
-  }
-  
-  get totalPages(): number {
-    return Math.ceil(this.filteredLogs.length / this.itemsPerPage);
+  // Pagination methods
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
   }
   
   previousPage(): void {
@@ -286,37 +55,107 @@ export class AuditTrailComponent implements OnInit {
     }
   }
   
+  // All audit logs
+  auditLogs: AuditLog[] = [];
+  
+  // Get unique applications for filter dropdown
+  get uniqueApplications(): string[] {
+    const apps = this.auditLogs.map(log => log.application);
+    return [...new Set(apps)].sort();
+  }
+  
+  constructor(private auditLogService: AuditLogService) { }
+  
+  ngOnInit(): void {
+    this.loadAuditLogs();
+  }
+  
+  loadAuditLogs(): void {
+    this.auditLogService.getAllLogs().subscribe(logs => {
+      console.log('Audit Trail Component - All logs loaded:', logs.length);
+      
+      // Count by action type for debugging
+      const tempCount = logs.filter(log => log.actionType === 'Temporary').length;
+      const permCount = logs.filter(log => log.actionType === 'Permanent').length;
+      const reactCount = logs.filter(log => log.actionType === 'Reactivation').length;
+      
+      console.log('Audit Trail Component - Action type counts:', {
+        temporary: tempCount,
+        permanent: permCount,
+        reactivation: reactCount,
+        total: logs.length
+      });
+      
+      this.auditLogs = logs;
+      this.applyFilters();
+    });
+  }
+  
+  filteredLogs: AuditLog[] = [];
+
+  get paginatedLogs(): AuditLog[] {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const paginatedData = this.filteredLogs.slice(startIndex, startIndex + this.itemsPerPage);
+    console.log('Paginated logs:', paginatedData.length, 'of', this.filteredLogs.length, 'filtered logs');
+    return paginatedData;
+  }
+  
+  get totalPages(): number {
+    return Math.ceil(this.filteredLogs.length / this.itemsPerPage);
+  }
+  
   clearSearch(): void {
     this.searchTerm = '';
     this.clearFilters(); // Also clear filters when clearing search
   }
 
   exportAuditTrails(): void {
-    // Create export data
-    const exportData = {
-      title: 'Audit Trails Report',
-      filters: {
-        dateFilter: this.dateFilter,
-        actionTypeFilter: this.actionTypeFilter,
-        applicationFilter: this.applicationFilter,
-        officerFilter: this.officerFilter,
-        searchTerm: this.searchTerm
-      },
-      generatedAt: new Date().toISOString(),
-      generatedBy: this.currentUser,
-      totalRecords: this.filteredLogs.length,
-      records: this.filteredLogs
-    };
+    // Create CSV content
+    let csvContent = 'Date,Employee,Employee ID,Application,Action Type,Expiration Date,Reason,Officer\n';
     
-    // Convert to JSON string
-    const jsonData = JSON.stringify(exportData, null, 2);
+    // Add data rows
+    this.filteredLogs.forEach(log => {
+      // Format each field and handle commas by wrapping in quotes if needed
+      const formatField = (field: string | Date): string => {
+        if (field === undefined || field === null) return '';
+        
+        // Convert Date objects to string
+        const fieldStr = field instanceof Date ? field.toLocaleString() : String(field);
+        
+        // If field contains commas, quotes, or newlines, wrap in quotes and escape any quotes
+        return fieldStr.includes(',') || fieldStr.includes('"') || fieldStr.includes('\n') 
+          ? `"${fieldStr.replace(/"/g, '""')}"` 
+          : fieldStr;
+      };
+      
+      // Calculate expiration date
+      let expirationDate = '';
+      if (log.actionType === 'Temporary') {
+        expirationDate = this.getExpirationDate(log);
+      } else {
+        expirationDate = 'Not Applicable';
+      }
+      
+      const row = [
+        formatField(log.date),
+        formatField(log.employee || ''),
+        formatField(log.employeeId || ''),
+        formatField(log.application),
+        formatField(log.actionType),
+        formatField(expirationDate),
+        formatField(log.reason),
+        formatField(log.officer)
+      ];
+      
+      csvContent += row.join(',') + '\n';
+    });
     
-    // Create blob and download using native browser APIs
-    const blob = new Blob([jsonData], { type: 'application/json' });
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `audit-trails-${this.formatDate(new Date())}.json`;
+    a.download = `audit-trails-${this.formatDate(new Date())}.csv`;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
@@ -336,22 +175,110 @@ export class AuditTrailComponent implements OnInit {
 
   // Add a method to manually trigger filtering
   applyFilters(): void {
-    console.log('Applying filters:', {
-      dateFilter: this.dateFilter,
-      actionTypeFilter: this.actionTypeFilter,
-      applicationFilter: this.applicationFilter,
-      officerFilter: this.officerFilter,
-      searchTerm: this.searchTerm
-    });
+    console.log('Applying filters with search term:', this.searchTerm);
     
-    // Force change detection by reassigning currentPage
+    // Start with all logs
+    let filtered = [...this.auditLogs];
+    console.log('Starting with all logs:', filtered.length);
+    
+    // Apply search filter if there is a search term
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
+      const term = this.searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(log => 
+        (log.employee && log.employee.toLowerCase().includes(term)) ||
+        (log.employeeId && log.employeeId.toLowerCase().includes(term)) ||
+        (log.application && log.application.toLowerCase().includes(term)) ||
+        (log.actionType && log.actionType.toLowerCase().includes(term)) ||
+        (log.reason && log.reason.toLowerCase().includes(term)) ||
+        (log.officer && log.officer.toLowerCase().includes(term))
+      );
+      console.log('After search filter:', filtered.length);
+    }
+    
+    // Apply date filter
+    if (this.datePreset !== 'all') {
+      const now = new Date();
+      let cutoffDate = new Date();
+      
+      switch (this.datePreset) {
+        case 'today':
+          cutoffDate.setHours(0, 0, 0, 0); // Start of today
+          break;
+        case 'week':
+          cutoffDate.setDate(now.getDate() - 7);
+          break;
+        case 'month':
+          cutoffDate.setDate(now.getDate() - 30);
+          break;
+        case 'quarter':
+          cutoffDate.setDate(now.getDate() - 90);
+          break;
+      }
+      
+      filtered = filtered.filter(log => {
+        const logDate = new Date(log.date);
+        return logDate >= cutoffDate;
+      });
+      console.log('After date filter:', filtered.length);
+    }
+    
+    // Apply custom date range filter
+    if (this.datePreset === 'custom' && this.startDate && this.endDate) {
+      try {
+        const startDate = new Date(this.startDate);
+        const endDate = new Date(this.endDate);
+        // Set end date to end of day
+        endDate.setHours(23, 59, 59, 999);
+        
+        filtered = filtered.filter(log => {
+          const logDate = new Date(log.date);
+          return logDate >= startDate && logDate <= endDate;
+        });
+        console.log('After custom date range filter:', filtered.length);
+      } catch (error) {
+        console.error('Error filtering by date range:', error);
+      }
+    }
+    
+    // Apply action type filter
+    if (this.actionTypeFilter !== 'All Actions') {
+      filtered = filtered.filter(log => 
+        log.actionType === this.actionTypeFilter
+      );
+      console.log('After action type filter:', filtered.length);
+    }
+    
+    // Apply application filter
+    if (this.applicationFilter !== 'All Applications') {
+      filtered = filtered.filter(log => 
+        log.application === this.applicationFilter
+      );
+      console.log('After application filter:', filtered.length);
+    }
+    
+    // Apply officer filter
+    if (this.officerFilter !== 'All Officers') {
+      if (this.officerFilter === 'Current User') {
+        filtered = filtered.filter(log => 
+          log.officer === 'Current User'
+        );
+      } else {
+        filtered = filtered.filter(log => 
+          log.officer === this.officerFilter
+        );
+      }
+      console.log('After officer filter:', filtered.length);
+    }
+    
+    // Update filtered logs
+    this.filteredLogs = filtered;
+    console.log('Final filtered logs:', this.filteredLogs.length);
+    
+    // Reset to page 1 when filters change
     this.currentPage = 1;
     
-    // Explicitly trigger change detection
-    this.cdr.detectChanges();
-    
-    // Log the filtered results to verify
-    console.log('Filtered logs count:', this.filteredLogs.length);
+    // Update pagination
+    this.updatePagination();
   }
 
   // Helper method to convert month name to number with proper typing
@@ -373,13 +300,13 @@ export class AuditTrailComponent implements OnInit {
 
   // Add methods to handle the clear filters functionality
   clearFilters(): void {
-    // Reset all filters to their default values
-    this.dateFilter = 'all';
+    this.datePreset = 'all';
+    this.startDate = '';
+    this.endDate = '';
+    
     this.actionTypeFilter = 'All Actions';
     this.applicationFilter = 'All Applications';
     this.officerFilter = 'All Officers';
-    
-    // Keep the search term as is
     
     // Apply the updated filters
     this.applyFilters();
@@ -387,23 +314,174 @@ export class AuditTrailComponent implements OnInit {
 
   // Method to check if any filters are active
   hasActiveFilters(): boolean {
-    const result = this.dateFilter !== 'all' || 
+    return this.datePreset !== 'all' || 
            this.actionTypeFilter !== 'All Actions' || 
            this.applicationFilter !== 'All Applications' || 
            this.officerFilter !== 'All Officers';
+  }
+
+  // Add properties for date range dialog
+  showDateRangeDialog: boolean = false;
+  tempStartDate: string = '';
+  tempEndDate: string = '';
+  selectedDateRangeText: string = 'All Time';
+
+  // Method to handle date preset change
+  onDatePresetChange(): void {
+    if (this.datePreset === 'custom') {
+      // Show the date range dialog
+      this.showDateRangeDialog = true;
+      
+      // Initialize with current values or defaults
+      if (!this.startDate || !this.endDate) {
+        const today = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        
+        this.tempStartDate = this.formatDateForInput(thirtyDaysAgo);
+        this.tempEndDate = this.formatDateForInput(today);
+      } else {
+        this.tempStartDate = this.startDate;
+        this.tempEndDate = this.endDate;
+      }
+    } else {
+      // Apply the selected preset directly
+      this.applyDatePreset();
+    }
+  }
+
+  // Method to cancel the date range dialog
+  cancelDateRangeDialog(): void {
+    this.showDateRangeDialog = false;
     
-    console.log('hasActiveFilters check:', {
-      dateFilter: this.dateFilter,
-      actionTypeFilter: this.actionTypeFilter,
-      applicationFilter: this.applicationFilter,
-      officerFilter: this.officerFilter,
-      result: result
+    // If we were previously using a different preset, revert to it
+    if (this.datePreset === 'custom' && !this.startDate) {
+      this.datePreset = 'all'; // Default to "All Time" if no custom range was previously set
+    }
+  }
+
+  // Method to apply the selected date range
+  applyDateRange(): void {
+    this.startDate = this.tempStartDate;
+    this.endDate = this.tempEndDate;
+    this.showDateRangeDialog = false;
+    
+    // Format the selected date range for display
+    try {
+      const startDate = new Date(this.startDate);
+      const endDate = new Date(this.endDate);
+      this.selectedDateRangeText = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+    } catch (error) {
+      console.error('Error formatting date range text:', error);
+      this.selectedDateRangeText = 'Custom Range';
+    }
+    
+    // Apply filters with the new date range
+    this.applyFilters();
+  }
+
+  // Method to apply date presets
+  applyDatePreset(): void {
+    const today = new Date();
+    let startDate = new Date();
+    
+    switch (this.datePreset) {
+      case 'today':
+        // Set to start of today
+        startDate.setHours(0, 0, 0, 0);
+        this.selectedDateRangeText = 'Today';
+        break;
+      case 'week':
+        // Set to 7 days ago
+        startDate.setDate(today.getDate() - 7);
+        this.selectedDateRangeText = 'Last 7 Days';
+        break;
+      case 'month':
+        // Set to 30 days ago
+        startDate.setDate(today.getDate() - 30);
+        this.selectedDateRangeText = 'Last 30 Days';
+        break;
+      case 'quarter':
+        // Set to 90 days ago
+        startDate.setDate(today.getDate() - 90);
+        this.selectedDateRangeText = 'Last 90 Days';
+        break;
+      case 'all':
+        // For "All Time", we don't need specific dates
+        this.startDate = '';
+        this.endDate = '';
+        this.selectedDateRangeText = 'All Time';
+        this.applyFilters();
+        return;
+      case 'custom':
+        // This should be handled by the dialog, not here
+        return;
+    }
+    
+    // Format dates for input fields (YYYY-MM-DD)
+    this.startDate = this.formatDateForInput(startDate);
+    this.endDate = this.formatDateForInput(today);
+    
+    // Apply the filters with the new date range
+    this.applyFilters();
+  }
+
+  // Helper method to format dates for input fields
+  formatDateForInput(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // Helper method to format date for file names
+  // This method is already defined elsewhere in the component, so we're removing the duplicate
+
+  updatePagination(): void {
+    // Calculate total pages
+    const totalPages = Math.ceil(this.filteredLogs.length / this.itemsPerPage);
+    
+    // Ensure current page is valid
+    if (this.currentPage > totalPages) {
+      this.currentPage = Math.max(1, totalPages);
+    }
+  }
+
+  // Add the getExpirationDate method if it doesn't exist in the component
+  getExpirationDate(log: AuditLog): string {
+    if (log.expirationDate) {
+      return log.expirationDate;
+    }
+    
+    if (!log.duration) {
+      return 'Unknown';
+    }
+    
+    // Parse the log date
+    const logDate = new Date(log.date);
+    
+    // Extract the number of days from the duration string
+    const durationMatch = log.duration.match(/(\d+)/);
+    if (!durationMatch) {
+      return log.duration; // Return original duration if parsing fails
+    }
+    
+    const days = parseInt(durationMatch[1], 10);
+    
+    // Calculate expiration date
+    const expirationDate = new Date(logDate);
+    expirationDate.setDate(logDate.getDate() + days);
+    
+    // Format the date as DD MMM YYYY
+    return expirationDate.toLocaleDateString('en-US', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
     });
-    
-    return result;
   }
 }
 
+// Remove the updatePagination method that's outside the class
 
 
 
