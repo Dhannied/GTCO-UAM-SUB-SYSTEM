@@ -18,7 +18,3 @@ import { AppComponent } from './app.component';
   bootstrap: [] // Remove AppComponent from bootstrap array since it's imported
 })
 export class AppModule { }
-
-
-
-
