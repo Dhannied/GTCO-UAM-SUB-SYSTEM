@@ -1,28 +1,24 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { HttpClientModule } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
+import { CoreModule } from './core/core.module';
 import { AppComponent } from './app.component';
-import { SharedModule } from './shared/shared.module';
-import { UserManagementModule } from './user-management/user-management.module';
-import { UserManagementService } from './shared/services/user-management.service';
 
 @NgModule({
-  declarations: [
-    AppComponent
-    // Only include components that are not in feature modules
-  ],
+  declarations: [], // Remove AppComponent from here since it's standalone
   imports: [
     BrowserModule,
+    HttpClientModule,
     AppRoutingModule,
-    SharedModule,
-    UserManagementModule
+    CoreModule,
+    AppComponent // Add it as an import instead
   ],
-  providers: [
-    UserManagementService
-  ],
-  bootstrap: [AppComponent]
+  providers: [],
+  bootstrap: [] // Remove AppComponent from bootstrap array since it's imported
 })
 export class AppModule { }
+
 
 
 
