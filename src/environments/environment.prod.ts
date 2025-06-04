@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:3000' // Change this to your production API URL
+  apiUrl: 'https://api.uam-deactivation-system.com' // Replace with your actual production API URL
 };

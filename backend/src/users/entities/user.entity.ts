@@ -10,7 +10,7 @@ export class User {
   @Column()
   name: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   email: string;
 
   @Column()
@@ -37,6 +37,9 @@ export class User {
   @Column({ nullable: true })
   photo: string;
 
+  @Column({ nullable: true, select: false })
+  password: string;
+
   @OneToMany(() => Application, application => application.user)
   applications: Application[];
 
@@ -46,3 +49,4 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 }
+

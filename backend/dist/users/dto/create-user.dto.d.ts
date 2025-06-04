@@ -1,8 +1,9 @@
 export declare class CreateUserDto {
     name: string;
-    email: string;
     role: string;
     department: string;
-    employeeId?: string;
+    employeeId: string;
+    password: string;
     phone?: string;
+    status?: string;
 }

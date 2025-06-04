@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const user_entity_1 = require("./entities/user.entity");
+const bcrypt = require("bcrypt");
 let UsersService = class UsersService {
     constructor(usersRepository) {
         this.usersRepository = usersRepository;
@@ -34,20 +35,33 @@ let UsersService = class UsersService {
         }
         return user;
     }
+    async findByEmployeeId(employeeId) {
+        const user = await this.usersRepository.findOne({
+            where: { employeeId },
+            select: ['id', 'name', 'email', 'role', 'status', 'department', 'employeeId', 'password'],
+            relations: ['applications']
+        });
+        if (!user) {
+            throw new common_1.NotFoundException(`User with employee ID ${employeeId} not found`);
+        }
+        return user;
+    }
     async create(createUserDto) {
-        const user = this.usersRepository.create(createUserDto);
+        const { password, ...userData } = createUserDto;
+        const user = this.usersRepository.create({
+            ...userData,
+            password: password ? await bcrypt.hash(password, 10) : undefined
+        });
         return this.usersRepository.save(user);
     }
     async update(id, updateUserDto) {
-        const user = await this.findOne(id);
-        Object.assign(user, updateUserDto);
-        return this.usersRepository.save(user);
+        await this.findOne(id);
+        await this.usersRepository.update(id, updateUserDto);
+        return this.findOne(id);
     }
     async remove(id) {
-        const result = await this.usersRepository.delete(id);
-        if (result.affected === 0) {
-            throw new common_1.NotFoundException(`User with ID ${id} not found`);
-        }
+        const user = await this.findOne(id);
+        await this.usersRepository.remove(user);
     }
 };
 exports.UsersService = UsersService;

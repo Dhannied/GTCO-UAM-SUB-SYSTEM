@@ -1,7 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../core/services/auth.service';
+
+interface LoginCredentials {
+  employeeId: string;
+  password: string;
+}
 
 @Component({
   selector: 'app-login',
@@ -13,18 +19,45 @@ import { Router } from '@angular/router';
 export class LoginComponent {
   employeeId: string = '';
   password: string = '';
-  // Removed selectedRole property since we're removing the role selector
+  isLoading: boolean = false;
+  errorMessage: string = '';
   
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router, 
+    private route: ActivatedRoute,
+    private authService: AuthService
+  ) {}
   
   login() {
-    // In a real app, you would validate credentials against a backend
-    console.log('Logging in with:', {
-      employeeId: this.employeeId
-      // Removed role from the log since we're no longer selecting it
-    });
+    this.isLoading = true;
+    this.errorMessage = '';
     
-    // Navigate to dashboard after login
-    this.router.navigate(['/dashboard']);
+    const credentials: LoginCredentials = {
+      employeeId: this.employeeId,
+      password: this.password
+    };
+    
+    this.authService.login(credentials).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        console.log('Login successful:', response);
+        
+        // Get return url from route parameters or default to '/'
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+        this.router.navigateByUrl(returnUrl);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('Login failed:', error);
+        
+        if (error.status === 401) {
+          this.errorMessage = 'Invalid employee ID or password';
+        } else {
+          this.errorMessage = 'An error occurred. Please try again later.';
+        }
+      }
+    });
   }
 }
+
+

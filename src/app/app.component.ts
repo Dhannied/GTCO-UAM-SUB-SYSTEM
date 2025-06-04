@@ -5,8 +5,17 @@ import { RouterOutlet } from '@angular/router';
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  template: `
+    <main>
+      <router-outlet></router-outlet>
+    </main>
+  `,
+  styles: [`
+    main {
+      width: 100%;
+      height: 100%;
+    }
+  `]
 })
 export class AppComponent {
   title = 'UAM-Centralized-Deactivation-System';

@@ -11,6 +11,7 @@ export declare class User {
     phone: string;
     joinDate: Date;
     photo: string;
+    password: string;
     applications: Application[];
     createdAt: Date;
     updatedAt: Date;
