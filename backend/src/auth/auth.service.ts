@@ -1,56 +1,43 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
-import { LoginDto } from './dto/login.dto';
+import { UamUsersService } from '../uam-users/uam-users.service';
 import * as bcrypt from 'bcrypt';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
+    private uamUsersService: UamUsersService,
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(employeeId: string, password: string): Promise<any> {
+  async validateUser(username: string, password: string): Promise<any> {
     try {
-      console.log('Attempting to validate user with employeeId:', employeeId);
-      const user = await this.usersService.findByEmployeeId(employeeId);
-      
-      console.log('User found:', user.id, user.employeeId);
-      console.log('Password exists:', !!user.password);
-      
-      // Check if user has password property before comparing
-      if (!user.password) {
-        console.log('No password found for user');
-        throw new UnauthorizedException('Invalid credentials');
+      const uamUser = await this.uamUsersService.validateUser(username, password);
+      if (uamUser) {
+        return { ...uamUser, userType: 'uam' };
       }
-      
-      console.log('Comparing passwords...');
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      console.log('Password valid:', isPasswordValid);
-      
-      if (!isPasswordValid) {
-        console.log('Password invalid');
-        throw new UnauthorizedException('Invalid credentials');
-      }
-      
-      const { password: _, ...result } = user;
-      console.log('User validated successfully');
-      return result;
+      return null; // Return null explicitly when user not found
     } catch (error) {
-      console.error('Error in validateUser:', error.message, error.stack);
-      throw new UnauthorizedException('Invalid credentials');
+      console.error('Error validating user:', error.message);
+      return null; // Return null on error
     }
   }
 
   async login(loginDto: LoginDto) {
     try {
-      console.log('Login attempt with:', loginDto.employeeId);
-      const user = await this.validateUser(loginDto.employeeId, loginDto.password);
+      console.log('Login attempt with:', loginDto.email);
+      const user = await this.validateUser(loginDto.email, loginDto.password);
+      
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
       
       const payload = { 
         sub: user.id, 
-        employeeId: user.employeeId,
+        email: user.email,
         role: user.role 
       };
       
@@ -69,6 +56,11 @@ export class AuthService {
     }
   }
 }
+
+
+
+
+
 
 
 

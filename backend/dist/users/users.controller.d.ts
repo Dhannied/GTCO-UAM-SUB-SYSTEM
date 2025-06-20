@@ -10,4 +10,7 @@ export declare class UsersController {
     create(createUserDto: CreateUserDto): Promise<User>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<User>;
     remove(id: string): Promise<void>;
+    generateMockEmployees(options?: {
+        count?: number;
+    }): Promise<User[]>;
 }

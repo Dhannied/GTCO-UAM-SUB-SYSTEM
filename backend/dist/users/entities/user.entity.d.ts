@@ -6,6 +6,7 @@ export declare class User {
     role: string;
     status: string;
     department: string;
+    position: string;
     lastActive: Date;
     employeeId: string;
     phone: string;

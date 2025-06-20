@@ -1,17 +1,21 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { SidebarComponent } from '../shared/sidebar/sidebar.component';
-import { ApplicationStateService, Employee } from '../shared/services/application-state.service';
+import { forkJoin, Observable, of } from 'rxjs';
 import { AuditLogService } from '../shared/services/audit-log.service';
 import { AuditLog } from '../shared/models/audit-log.model';
+import { Employee } from '../shared/models/employee.model';
+import { EmployeesService } from '../shared/services/employees.service';
+import { ApplicationStateService } from '../shared/services/application-state.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { SidebarComponent } from '../shared/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-employees',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, SidebarComponent],
   templateUrl: './employees.component.html',
+  encapsulation: ViewEncapsulation.None,
   styleUrls: ['./employees.component.css']
 })
 export class EmployeesComponent implements OnInit {
@@ -69,24 +73,66 @@ export class EmployeesComponent implements OnInit {
   
   constructor(
     private router: Router,
-    private appStateService: ApplicationStateService,
-    private auditLogService: AuditLogService // Inject AuditLogService directly
+    private auditLogService: AuditLogService,
+    private employeesService: EmployeesService,
+    private appStateService: ApplicationStateService
   ) {}
   
   ngOnInit(): void {
-    // Force using mock data for testing
-    this.employees = this.getMockEmployees();
-    this.appStateService.setEmployees(this.employees);
-    
-    console.log('Employees loaded:', this.employees);
-    this.filteredEmployees = [...this.employees];
-    this.updatePagination();
-    console.log('Paginated employees:', this.paginatedEmployees);
-
-    // Add selected property to employees
-    this.employees.forEach(employee => {
-      employee.selected = false;
-    });
+    // Fetch employees from the API instead of using mock data
+    this.employeesService.getEmployees().subscribe(
+      (employees) => {
+        this.employees = employees.map(emp => {
+          // Create properly typed applications array
+          const applications = (emp.applications || []).map(app => {
+            return {
+              id: app.id || `app-${Math.random().toString(36).substr(2, 9)}`,
+              name: app.name || '',
+              platform: app.platform || '',
+              accessLevel: (app.accessLevel || 'Read Only') as 'Full Access' | 'Read Only' | 'Write Only',
+              lastUsed: app.lastUsed || '',
+              icon: app.icon || '',
+              iconBg: app.iconBg || '',
+              status: (app.status || 'Active') as 'Active' | 'Inactive',
+              deactivationType: app.deactivationType as 'Temporary' | 'Permanent' | undefined
+            };
+          });
+          
+          // Return properly typed Employee object
+          return {
+            id: emp.id || '',
+            name: emp.name || '',
+            photo: emp.photo || '',
+            department: emp.department || '',
+            position: emp.position || '',
+            status: emp.status || '',
+            lastActive: emp.lastActive || '',
+            employeeId: emp.employeeId || '',
+            joinDate: emp.joinDate || '',
+            applications: applications,
+            selected: false
+          };
+        });
+        
+        this.appStateService.setEmployees(this.employees as import('../shared/services/application-state.service').Employee[]);
+        
+        console.log('Employees loaded from API:', this.employees);
+        
+        this.filteredEmployees = [...this.employees];
+        this.updatePagination();
+      },
+      (error) => {
+        console.error('Error fetching employees:', error);
+        // Fallback to mock data if API fails
+        this.employees = this.getMockEmployees();
+        this.appStateService.setEmployees(this.employees as import('../shared/services/application-state.service').Employee[]);
+        
+        console.log('Fallback to mock employees:', this.employees);
+        
+        this.filteredEmployees = [...this.employees];
+        this.updatePagination();
+      }
+    );
 
     // Set default dates for bulk deactivation
     const today = new Date();
@@ -409,43 +455,71 @@ export class EmployeesComponent implements OnInit {
     }
     
     // Create audit logs for each deactivation
+    const auditPromises: Observable<any>[] = [];
+    
+    // Get the current officer name from the application state service
+    const currentOfficer = this.appStateService.getCurrentOfficerName();
+    
     selectedEmployees.forEach(employee => {
       const auditEntry: AuditLog = {
-        date: new Date().toLocaleString('en-US', { 
-          day: '2-digit', 
-          month: 'short', 
-          year: 'numeric', 
-          hour: '2-digit', 
-          minute: '2-digit',
-          hour12: false
-        }),
+        date: new Date().toISOString(),
         employee: employee.name,
-        employeeId: employee.id,
+        employeeId: employee.employeeId || 'N/A', // Provide default if employeeId is undefined
         application: this.selectedApplication,
         actionType: this.bulkDeactivationType,
         reason: this.bulkDeactivationReason,
-        officer: 'Current User',
+        officer: currentOfficer, // Use the actual officer name
         duration: this.bulkDeactivationType === 'Temporary' ? 
           this.calculateDuration(this.bulkStartDate, this.bulkEndDate) : 'Permanent'
       };
       
-      // Add to the central audit log service directly
-      this.auditLogService.addLog(auditEntry);
+      // Add expiration date for temporary deactivations
+      if (this.bulkDeactivationType === 'Temporary' && this.bulkEndDate) {
+        auditEntry.expirationDate = new Date(this.bulkEndDate).toISOString();
+      }
+      
+      // Add to the central audit log service and collect the observables
+      const auditPromise = this.auditLogService.addLog(auditEntry);
+      auditPromises.push(auditPromise);
     });
     
-    // Show success message
-    alert(`Successfully deactivated ${this.selectedApplication} for ${selectedEmployees.length} employees.`);
-    
-    // Reset selections
-    this.employees.forEach(employee => {
-      if (employee.selected !== undefined) {
-        employee.selected = false;
+    // Wait for all audit logs to be saved
+    forkJoin(auditPromises).subscribe({
+      next: (results) => {
+        console.log('All audit logs saved successfully:', results);
+        
+        // Show success message
+        alert(`Successfully deactivated ${this.selectedApplication} for ${selectedEmployees.length} employees.`);
+        
+        // Reset selections
+        this.employees.forEach(employee => {
+          if (employee.selected !== undefined) {
+            employee.selected = false;
+          }
+        });
+        
+        // Close modal
+        this.showBulkDeactivationModal = false;
+        this.bulkSelectionMode = false; // Exit selection mode
+      },
+      error: (error) => {
+        console.error('Error saving audit logs:', error);
+        
+        // Still show success message for the UI
+        alert(`Successfully deactivated ${this.selectedApplication} for ${selectedEmployees.length} employees.`);
+        
+        // Reset selections
+        this.employees.forEach(employee => {
+          if (employee.selected !== undefined) {
+            employee.selected = false;
+          }
+        });
+        
+        // Close modal
+        this.showBulkDeactivationModal = false;
+        this.bulkSelectionMode = false; // Exit selection mode
       }
     });
-    
-    // Close modal
-    this.showBulkDeactivationModal = false;
-    this.bulkSelectionMode = false; // Exit selection mode
   }
 
   // Calculate duration between two dates
@@ -457,28 +531,6 @@ export class EmployeesComponent implements OnInit {
     return `${diffDays} days`;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

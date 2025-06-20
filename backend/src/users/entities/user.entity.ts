@@ -23,6 +23,9 @@ export class User {
   department: string;
 
   @Column({ nullable: true })
+  position: string;
+
+  @Column({ nullable: true })
   lastActive: Date;
 
   @Column({ nullable: true })
@@ -49,4 +52,5 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 }
+
 

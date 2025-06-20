@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -7,11 +7,13 @@ import { AuditLogService } from '../shared/services/audit-log.service';
 import { AuditLogTableComponent } from '../shared/audit-log-table/audit-log-table.component';
 import { SidebarComponent } from '../shared/sidebar/sidebar.component';
 import { AuditLog } from '../shared/models/audit-log.model';
+import { EmployeesService } from '../shared/services/employees.service';
 
 @Component({
   selector: 'app-employee-details',
   templateUrl: './employee-details.component.html',
   styleUrls: ['./employee-details.component.css'],
+  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     CommonModule,
@@ -59,6 +61,7 @@ export class EmployeeDetailsComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private appStateService: ApplicationStateService,
+    private employeesService: EmployeesService,
     private auditLogService: AuditLogService
   ) {}
   
@@ -86,26 +89,66 @@ export class EmployeeDetailsComponent implements OnInit {
     if (stateEmployee) {
       this.employee = stateEmployee;
       console.log('Loaded employee from state service:', this.employee);
+      
+      // Ensure employee has applications
+      if (!this.employee.applications || this.employee.applications.length === 0) {
+        console.log('Loading applications for employee');
+        this.loadEmployeeApplications();
+      } else {
+        // Load audit logs
+        this.loadAuditLogs();
+      }
     } else {
-      // If not in state service, use the mock data
-      console.log('Employee not found in state service, loading from mock data');
-      const mockEmployees = this.getMockEmployees();
-      this.employee = mockEmployees.find(emp => emp.id === this.employeeId) || null;
+      // If not in state service, fetch from API
+      console.log('Employee not found in state service, loading from API');
+      this.employeesService.getEmployeeById(this.employeeId).subscribe(
+        (employee) => {
+          this.employee = this.mapToApplicationStateEmployee(employee);
+          console.log('Loaded employee from API:', this.employee);
+          
+          // Update the state service with the fetched employee
+          if (this.employee) {
+            this.appStateService.updateEmployee(this.employee);
+          }
+          
+          // Ensure employee has applications
+          if (this.employee && (!this.employee.applications || this.employee.applications.length === 0)) {
+            console.log('Loading applications for employee');
+            this.loadEmployeeApplications();
+          } else {
+            // Load audit logs
+            this.loadAuditLogs();
+          }
+        },
+        (error) => {
+          console.error('Error fetching employee from API:', error);
+          // Fallback to mock data if API fails
+          const mockEmployees = this.getMockEmployees();
+          this.employee = mockEmployees.find(emp => emp.id === this.employeeId) || null;
+          
+          if (this.employee) {
+            console.log('Fallback to mock employee:', this.employee);
+            this.appStateService.updateEmployee(this.employee);
+            this.loadAuditLogs();
+          }
+        }
+      );
     }
-    
-    // Ensure employee has applications
-    if (this.employee && (!this.employee.applications || this.employee.applications.length === 0)) {
-      console.log('Adding mock applications to employee');
+  }
+
+  // Add a method to load employee applications if needed
+  loadEmployeeApplications(): void {
+    // This would be an API call in a real application
+    // For now, we'll use mock applications
+    if (this.employee) {
       this.employee.applications = this.getMockApplications();
       
       // Update the state service with the updated employee
       this.appStateService.updateEmployee(this.employee);
+      
+      // Load audit logs
+      this.loadAuditLogs();
     }
-    
-    // Load audit logs
-    this.loadAuditLogs();
-    
-    console.log('Employee data loaded:', this.employee);
   }
 
   // Get mock employees data with complete application data
@@ -221,51 +264,39 @@ export class EmployeeDetailsComponent implements OnInit {
   }
 
   activateAccess(appId: string): void {
-    console.log(`Activating access to application ${appId} for employee ${this.employeeId}`);
+    if (!this.employee) return;
     
-    // Find the application and update its status
-    if (this.employee && this.employee.applications) {
-      const app = this.employee.applications.find(a => a.id === appId);
-      if (app) {
-        // Check if the app was permanently deactivated
-        if (app.deactivationType === 'Permanent') {
-          // Show an error message or alert
-          alert('This application was permanently deactivated and cannot be reactivated.');
-          return;
+    // Find the application
+    const app = this.employee?.applications?.find(a => a.id === appId);
+    
+    if (app) {
+      // Update application status
+      this.appStateService.updateApplicationStatus(this.employeeId, appId, 'Active');
+      
+      // Create audit log entry
+      const newLog: AuditLog = {
+        date: new Date().toISOString(), // Use ISO format for consistent parsing
+        employee: this.employee.name,
+        employeeId: this.employee.employeeId || this.employeeId, // Use the business employeeId
+        application: app.name,
+        actionType: 'Reactivation',
+        reason: 'Access restored by UAM officer',
+        officer: this.appStateService.getCurrentOfficerName()
+      };
+      
+      // Add to audit logs
+      this.auditLogService.addLog(newLog).subscribe({
+        next: (log) => {
+          console.log('Reactivation audit log added successfully:', log);
+          this.loadAuditLogs();
+        },
+        error: (error) => {
+          console.error('Error adding reactivation audit log:', error);
+          // Still update local UI
+          this.auditLogs.unshift(newLog);
+          this.allAuditLogs.unshift(newLog);
         }
-        
-        app.status = 'Active';
-        app.deactivationType = undefined;
-        
-        // Update the state service
-        this.appStateService.updateApplicationStatus(
-          this.employeeId,
-          appId,
-          'Active'
-        );
-        
-        // Create audit log entry
-        const newLog: AuditLog = {
-          date: new Date().toLocaleString('en-US', { 
-            day: '2-digit', 
-            month: 'short', 
-            year: 'numeric', 
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: false
-          }),
-          employee: this.employee.name,
-          employeeId: this.employeeId,
-          application: app.name,
-          actionType: 'Reactivation',
-          reason: 'Access restored by UAM officer',
-          officer: 'Current User'
-        };
-        
-        // Add to audit logs
-        this.auditLogService.addLog(newLog);
-        this.loadAuditLogs();
-      }
+      });
     }
   }
 
@@ -306,30 +337,21 @@ export class EmployeeDetailsComponent implements OnInit {
   
   // Confirm deactivation
   confirmDeactivation(): void {
-    if (!this.selectedApp) return;
+    if (!this.employee || !this.selectedApp) return;
     
-    // Validate that a reason is selected
-    if (this.deactivationType === 'Temporary' && !this.deactivationReason) {
-      alert('Please select a reason for temporary deactivation');
-      return;
-    }
-    
-    if (this.deactivationType === 'Permanent' && !this.permanentDeactivationReason) {
-      alert('Please select a reason for permanent deactivation');
-      return;
-    }
-    
-    // Update the application status
-    this.selectedApp.status = 'Inactive';
-    this.selectedApp.deactivationType = this.deactivationType;
-    
-    // Update the state service
-    this.appStateService.updateApplicationStatus(
-      this.employeeId,
-      this.selectedApp.id,
-      'Inactive',
-      this.deactivationType
+    // Update application status
+    this.appStateService.deactivateApplication(
+      this.employeeId, 
+      this.selectedApp.id, 
+      this.deactivationType,
+      this.startDate,
+      this.endDate
     );
+    
+    // Determine reason based on deactivation type
+    const reason = this.deactivationType === 'Temporary' 
+      ? this.deactivationReason 
+      : this.permanentDeactivationReason;
     
     // Calculate duration for temporary deactivations
     let duration = '';
@@ -341,27 +363,15 @@ export class EmployeeDetailsComponent implements OnInit {
       duration = `${diffDays} days`;
     }
     
-    // Get the appropriate reason based on deactivation type
-    const reason = this.deactivationType === 'Temporary' 
-      ? this.deactivationReason 
-      : this.permanentDeactivationReason;
-    
     // Create audit log entry
     const auditEntry: AuditLog = {
-      date: new Date().toLocaleString('en-US', { 
-        day: '2-digit', 
-        month: 'short', 
-        year: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: false
-      }),
+      date: new Date().toISOString(), // Use ISO format for consistent parsing
       employee: this.employee?.name || '',
-      employeeId: this.employeeId,
+      employeeId: this.employee?.employeeId || this.employeeId, // Use the business employeeId
       application: this.selectedApp.name,
       actionType: this.deactivationType,
       reason: reason,
-      officer: 'Current User'
+      officer: this.appStateService.getCurrentOfficerName()
     };
     
     // Add duration for temporary deactivations
@@ -369,12 +379,20 @@ export class EmployeeDetailsComponent implements OnInit {
       auditEntry.duration = duration || '30 days';
     }
     
-    // Add to local arrays
-    this.auditLogs.unshift(auditEntry);
-    this.allAuditLogs.unshift(auditEntry);
-    
     // Add to the central audit log service
-    this.auditLogService.addLog(auditEntry);
+    this.auditLogService.addLog(auditEntry).subscribe({
+      next: (log) => {
+        console.log('Audit log added successfully:', log);
+        // Refresh local audit logs
+        this.loadAuditLogs();
+      },
+      error: (error) => {
+        console.error('Error adding audit log:', error);
+        // Still update local UI
+        this.auditLogs.unshift(auditEntry);
+        this.allAuditLogs.unshift(auditEntry);
+      }
+    });
     
     // Close the modal
     this.showDeactivationModal = false;
@@ -410,31 +428,31 @@ export class EmployeeDetailsComponent implements OnInit {
       {
         date: '15 Jun 2025, 14:32',
         employee: this.employee.name,
-        employeeId: this.employeeId,
+        employeeId: this.employee.employeeId || this.employeeId, // Use the business employeeId
         application: 'Core Banking',
         actionType: 'Temporary',
         duration: '14 days',
         reason: 'Employee on leave',
-        officer: 'Current User'
+        officer: this.appStateService.getCurrentOfficerName()
       },
       {
         date: '10 May 2025, 09:15',
         employee: this.employee.name,
-        employeeId: this.employeeId,
+        employeeId: this.employee.employeeId || this.employeeId, // Use the business employeeId
         application: 'Business Intelligence',
         actionType: 'Permanent',
         reason: 'Role change',
-        officer: 'Current User'
+        officer: this.appStateService.getCurrentOfficerName()
       },
       {
         date: '05 May 2025, 11:20',
         employee: this.employee.name,
-        employeeId: this.employeeId,
+        employeeId: this.employee.employeeId || this.employeeId, // Use the business employeeId
         application: 'Loan Management',
         actionType: 'Temporary',
         duration: '30 days',
         reason: 'System maintenance',
-        officer: 'Current User'
+        officer: this.appStateService.getCurrentOfficerName()
       }
     ];
     
@@ -535,23 +553,18 @@ export class EmployeeDetailsComponent implements OnInit {
   goBack(): void {
     this.router.navigate(['/employees']);
   }
+
+  // Map Employee from model to ApplicationStateService format
+  private mapToApplicationStateEmployee(employee: any): Employee {
+    return {
+      ...employee,
+      applications: employee.applications?.map((app: any) => ({
+        ...app,
+        id: app.id || `app-${Math.random().toString(36).substr(2, 9)}` // Ensure id is never undefined
+      })) || []
+    };
+  }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

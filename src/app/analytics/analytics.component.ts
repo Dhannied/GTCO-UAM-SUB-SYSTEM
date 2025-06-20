@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { SidebarComponent } from '../shared/sidebar/sidebar.component';
 import { AuditLogService } from '../shared/services/audit-log.service';
+import { SidebarComponent } from '../shared/sidebar/sidebar.component';
+import { AuditLog } from '../shared/models/audit-log.model';
+import { ApplicationStateService } from '../shared/services/application-state.service';
 // import { saveAs } from 'file-saver';
 
 // Declare Chart.js to avoid TypeScript errors
@@ -12,8 +13,9 @@ declare var Chart: any;
 @Component({
   selector: 'app-analytics',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent],
   templateUrl: './analytics.component.html',
+  encapsulation: ViewEncapsulation.None,
   styleUrls: ['./analytics.component.css']
 })
 export class AnalyticsComponent implements OnInit {
@@ -25,11 +27,11 @@ export class AnalyticsComponent implements OnInit {
   private reasonChart: any;
   
   // Analytics data
-  totalDeactivations: number = 245;
-  pendingDeactivations: number = 18;
-  completedDeactivations: number = 227;
-  temporaryDeactivations: number = 87;
-  permanentDeactivations: number = 158;
+  totalDeactivations: number = 0;
+  pendingDeactivations: number = 0;
+  completedDeactivations: number = 0;
+  temporaryDeactivations: number = 0;
+  permanentDeactivations: number = 0;
   
   // Filter
   selectedDateRange: string = 'last30days';
@@ -37,20 +39,20 @@ export class AnalyticsComponent implements OnInit {
   
   // Department data
   departmentData = [
-    { department: 'IT', count: 78 },
-    { department: 'Finance', count: 45 },
-    { department: 'HR', count: 32 },
-    { department: 'Operations', count: 56 },
-    { department: 'Marketing', count: 34 }
+    { department: 'IT', count: 0 },
+    { department: 'Finance', count: 0 },
+    { department: 'HR', count: 0 },
+    { department: 'Operations', count: 0 },
+    { department: 'Marketing', count: 0 }
   ];
   
   // Reason data
   reasonData = [
-    { reason: 'Resignation', count: 98 },
-    { reason: 'Termination', count: 60 },
-    { reason: 'Retirement', count: 42 },
-    { reason: 'Leave of Absence', count: 25 },
-    { reason: 'Other', count: 20 }
+    { reason: 'Resignation', count: 0 },
+    { reason: 'Termination', count: 0 },
+    { reason: 'Retirement', count: 0 },
+    { reason: 'Leave of Absence', count: 0 },
+    { reason: 'Other', count: 0 }
   ];
 
   // Add properties for date range
@@ -61,7 +63,10 @@ export class AnalyticsComponent implements OnInit {
   tempEndDate: string = '';
   selectedDateRangeText: string = 'Last 30 Days';
 
-  constructor(private auditLogService: AuditLogService) { }
+  constructor(
+    private auditLogService: AuditLogService,
+    private appStateService: ApplicationStateService
+  ) { }
 
   ngOnInit(): void {
     // Load Chart.js from CDN
@@ -344,35 +349,59 @@ export class AnalyticsComponent implements OnInit {
   }
 
   loadAnalyticsData(): void {
-    this.auditLogService.getAnalyticsData().subscribe(data => {
-      // Update metrics with data from the service
-      this.totalDeactivations = data.totalDeactivations || 0;
-      this.temporaryDeactivations = data.temporaryDeactivations || 0;
-      this.permanentDeactivations = data.permanentDeactivations || 0;
+    // Get all audit logs
+    this.auditLogService.getAllLogs().subscribe(logs => {
+      console.log('Analytics: Loaded audit logs:', logs.length);
+      
+      // Calculate metrics from logs
+      this.temporaryDeactivations = logs.filter(log => log.actionType === 'Temporary').length;
+      this.permanentDeactivations = logs.filter(log => log.actionType === 'Permanent').length;
+      this.totalDeactivations = this.temporaryDeactivations + this.permanentDeactivations;
       
       // Calculate pending and completed deactivations
       this.pendingDeactivations = Math.floor(this.totalDeactivations * 0.07); // Approximately 7% pending
       this.completedDeactivations = this.totalDeactivations - this.pendingDeactivations;
       
+      // Calculate department data
+      const deptCounts: {[key: string]: number} = {};
+      logs.forEach(log => {
+        if (log.actionType === 'Temporary' || log.actionType === 'Permanent') {
+          // Get department from employee or use a default
+          const dept = this.getDepartmentForEmployee(log.employeeId) || 'Unknown';
+          deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+        }
+      });
+      
       // Update department data
-      if (data.departmentData && data.departmentData.length > 0) {
-        this.departmentData = data.departmentData;
-      }
+      this.departmentData = Object.keys(deptCounts).map(dept => ({
+        department: dept,
+        count: deptCounts[dept]
+      })).sort((a, b) => b.count - a.count);
+      
+      // Calculate reason data
+      const reasonCounts: {[key: string]: number} = {};
+      logs.forEach(log => {
+        if (log.actionType === 'Temporary' || log.actionType === 'Permanent') {
+          const reason = log.reason || 'Other';
+          reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
+        }
+      });
       
       // Update reason data
-      if (data.reasonCounts) {
-        const reasonCounts = data.reasonCounts;
-        this.reasonData = Object.keys(reasonCounts)
-          .map(reason => ({
-            reason,
-            count: reasonCounts[reason]
-          }))
-          .sort((a, b) => b.count - a.count);
-      }
+      this.reasonData = Object.keys(reasonCounts).map(reason => ({
+        reason,
+        count: reasonCounts[reason]
+      })).sort((a, b) => b.count - a.count);
       
       // Render charts with the updated data
       this.renderCharts();
     });
+  }
+  
+  // Helper method to get department for an employee
+  private getDepartmentForEmployee(employeeId: string): string | null {
+    const employee = this.appStateService.getEmployeeById(employeeId);
+    return employee?.department || null;
   }
 
   // Method to handle date range change
@@ -479,23 +508,23 @@ export class AnalyticsComponent implements OnInit {
     const endOfDay = new Date(endDate);
     endOfDay.setHours(23, 59, 59, 999);
     
-    this.auditLogService.getLogsByDateRange(startDate, endOfDay).subscribe(logs => {
+    this.auditLogService.getLogsByDateRange(startDate, endOfDay).subscribe((logs: AuditLog[]) => {
       // Calculate metrics
-      this.totalDeactivations = logs.filter(log => 
+      this.totalDeactivations = logs.filter((log: AuditLog) => 
         log.actionType === 'Temporary' || log.actionType === 'Permanent'
       ).length;
       
-      this.temporaryDeactivations = logs.filter(log => 
+      this.temporaryDeactivations = logs.filter((log: AuditLog) => 
         log.actionType === 'Temporary'
       ).length;
       
-      this.permanentDeactivations = logs.filter(log => 
+      this.permanentDeactivations = logs.filter((log: AuditLog) => 
         log.actionType === 'Permanent'
       ).length;
       
       // Calculate deactivations by application
       const appCounts: {[key: string]: number} = {};
-      logs.forEach(log => {
+      logs.forEach((log: AuditLog) => {
         if (log.actionType === 'Temporary' || log.actionType === 'Permanent') {
           if (!appCounts[log.application]) {
             appCounts[log.application] = 0;
@@ -504,24 +533,30 @@ export class AnalyticsComponent implements OnInit {
         }
       });
       
-      // Calculate deactivations by reason
-      const reasonCounts: {[key: string]: number} = {};
-      logs.forEach(log => {
+      // Calculate deactivations by department
+      const deptCounts: {[key: string]: number} = {};
+      logs.forEach((log: AuditLog) => {
         if (log.actionType === 'Temporary' || log.actionType === 'Permanent') {
-          if (!reasonCounts[log.reason]) {
-            reasonCounts[log.reason] = 0;
+          // Extract department from employee ID or use a default
+          const dept = log.department || 'Unknown';
+          if (!deptCounts[dept]) {
+            deptCounts[dept] = 0;
           }
-          reasonCounts[log.reason]++;
+          deptCounts[dept]++;
         }
       });
-
-      // Update reason data
-      this.reasonData = Object.keys(reasonCounts).map(reason => ({
-        reason,
-        count: reasonCounts[reason]
+      
+      // Calculate department data from counts
+      this.departmentData = Object.keys(deptCounts).map(dept => ({
+        department: dept,
+        count: deptCounts[dept]
       })).sort((a, b) => b.count - a.count);
       
-      // Render charts with the updated data
+      // Update pending and completed counts
+      this.pendingDeactivations = Math.floor(this.totalDeactivations * 0.07);
+      this.completedDeactivations = this.totalDeactivations - this.pendingDeactivations;
+      
+      // Re-render charts
       this.renderCharts();
     });
   }
@@ -534,6 +569,12 @@ export class AnalyticsComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
 }
+
+
+
+
+
+
 
 
 

@@ -14,6 +14,7 @@ const users_module_1 = require("./users/users.module");
 const auth_module_1 = require("./auth/auth.module");
 const applications_module_1 = require("./applications/applications.module");
 const audit_logs_module_1 = require("./audit-logs/audit-logs.module");
+const uam_users_module_1 = require("./uam-users/uam-users.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -42,6 +43,7 @@ exports.AppModule = AppModule = __decorate([
             auth_module_1.AuthModule,
             applications_module_1.ApplicationsModule,
             audit_logs_module_1.AuditLogsModule,
+            uam_users_module_1.UamUsersModule,
         ],
     })
 ], AppModule);

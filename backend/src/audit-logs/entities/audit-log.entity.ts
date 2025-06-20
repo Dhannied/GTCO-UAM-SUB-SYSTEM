@@ -9,7 +9,7 @@ export class AuditLog {
   employee: string;
 
   @Column()
-  employeeId: string;
+  employeeId: string; // This should store the employee's business ID, not the database ID
 
   @Column()
   application: string;
@@ -23,6 +23,13 @@ export class AuditLog {
   @Column()
   officer: string;
 
+  @Column({ nullable: true })
+  department: string;
+
+  @Column({ nullable: true })
+  duration: string;
+
   @CreateDateColumn()
   date: Date;
 }
+

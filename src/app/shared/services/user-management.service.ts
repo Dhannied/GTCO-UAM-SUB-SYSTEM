@@ -1,213 +1,226 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, of, tap, catchError } from 'rxjs';
 import { AuditLog } from '../models/audit-log.model';
+import { environment } from '../../../environments/environment';
 
 export interface UAMUser {
   id: string;
   name: string;
   email: string;
   role: string;
-  status: string;
   department: string;
-  lastActive: string;
-  authorizedApps?: string[];  // Make sure this is defined
-  applications?: any[];       // Make sure this is defined
+  status: string;
+  lastActive?: string;
+  applications?: any[];
+  authorizedApps?: string[];
+  photo?: string;
   employeeId?: string;
-  phone?: string;
-  joinDate?: string;
-  photo?: string;  // Add the photo property as optional
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserManagementService {
-  private usersSubject = new BehaviorSubject<UAMUser[]>([]);
+  private apiUrl = `${environment.apiUrl}/uam-users`;
   
-  constructor() {
-    // Initialize with mock data
-    this.usersSubject.next(this.getMockUsers());
-  }
+  constructor(private http: HttpClient) {}
   
+  // Get all UAM users
   getUsers(): Observable<UAMUser[]> {
-    return this.usersSubject.asObservable();
-  }
-  
-  getUserById(id: string): Observable<UAMUser | null> {
-    const user = this.usersSubject.value.find(user => user.id === id) || null;
-    return of(user);
-  }
-  
-  addUser(user: UAMUser): Observable<UAMUser> {
-    const currentUsers = this.usersSubject.value;
-    this.usersSubject.next([user, ...currentUsers]);
-    console.log('User added to service:', user);
-    console.log('Current users in service:', this.usersSubject.value);
-    return of(user); // Return an Observable of the user
-  }
-  
-  updateUser(user: UAMUser): Observable<UAMUser> {
-    const users = this.usersSubject.value;
-    const index = users.findIndex(u => u.id === user.id);
+    console.log('Fetching users from:', this.apiUrl);
     
-    if (index !== -1) {
-      users[index] = { ...user };
-      this.usersSubject.next([...users]);
-      console.log('User updated in service:', user);
-    }
-    
-    return of(user);
-  }
-  
-  getUserAuditLogs(userId: string): Observable<AuditLog[]> {
-    // Mock audit logs for the user
-    return of(this.getMockAuditLogs(userId));
-  }
-  
-  // Mock data
-  private getMockUsers(): UAMUser[] {
-    return [
-      // Your mock users here
-      {
-        id: 'UAM-1001',
-        name: 'John Smith',
-        email: 'john.smith@example.com',
-        role: 'Supervisor',
-        status: 'Active',
-        department: 'IT',
-        lastActive: '2023-05-15 14:30',
-        phone: '+234 9013274980',
-        joinDate: '2020-03-15',
-        authorizedApps: ['Core Banking', 'Finnacle', 'Gap', 'E-Document Manager'],
-        employeeId: 'EMP-10045',
-        applications: [
-          {
-            id: 'app1',
-            name: 'Core Banking',
-            platform: 'Web Application',
-            accessLevel: 'Admin',
-            lastUsed: '2023-05-14',
-            icon: 'university',
-            iconBg: '#4CAF50',
-            status: 'Active'
-          },
-          {
-            id: 'app2',
-            name: 'Finnacle',
-            platform: 'Desktop Application',
-            accessLevel: 'User',
-            lastUsed: '2023-05-10',
-            icon: 'chart-line',
-            iconBg: '#2196F3',
-            status: 'Active'
+    return this.http.get<UAMUser[]>(`${this.apiUrl}`).pipe(
+      tap(users => {
+        console.log('Raw users from API:', users);
+        
+        // Debug: Check each user's lastActive
+        users.forEach(user => {
+          console.log(`User ${user.name} lastActive:`, user.lastActive, 'Type:', typeof user.lastActive);
+          
+          // Ensure lastActive is a string if it exists
+          if (user.lastActive) {
+            if (typeof user.lastActive === 'object') {
+              user.lastActive = new Date(user.lastActive).toISOString();
+              console.log(`Converted lastActive for ${user.name}:`, user.lastActive);
+            }
+          } else {
+            console.log(`No lastActive for ${user.name}, using current time`);
+            // If no lastActive, set it to current time
+            user.lastActive = new Date().toISOString();
           }
-        ]
+        });
+      }),
+      catchError(error => {
+        console.error('Error fetching users:', error);
+        // Return mock data if API fails
+        const mockUsers = this.getMockUsers();
+        console.log('Using mock users:', mockUsers);
+        return of(mockUsers);
+      })
+    );
+  }
+  
+  // Get a specific UAM user by ID
+  getUserById(id: string): Observable<UAMUser> {
+    return this.http.get<UAMUser>(`${this.apiUrl}/${id}`);
+  }
+  
+  // Alias for getUserById to maintain compatibility with existing code
+  getUser(id: string): Observable<UAMUser> {
+    console.log(`Fetching user with ID: ${id} from ${this.apiUrl}/${id}`);
+    return this.http.get<UAMUser>(`${this.apiUrl}/${id}`).pipe(
+      tap(user => console.log('User data received:', user)),
+      catchError((error: unknown) => {
+        console.error(`Error fetching user with ID ${id}:`, error);
+        // Return mock data if API fails
+        return of(this.getMockUser(id));
+      })
+    );
+  }
+
+  // Add a method to create mock user data
+  private getMockUser(id: string): UAMUser {
+    return {
+      id: id,
+      name: 'Mock User',
+      email: 'mock@example.com',
+      role: 'Officer',
+      department: 'Security',
+      status: 'Active',
+      lastActive: new Date().toISOString()
+    };
+  }
+  
+  // Add a new UAM user
+  addUser(user: UAMUser): Observable<UAMUser> {
+    return this.http.post<UAMUser>(this.apiUrl, user);
+  }
+  
+  // Update a UAM user
+  updateUser(id: string, user: UAMUser): Observable<UAMUser> {
+    return this.http.put<UAMUser>(`${this.apiUrl}/${id}`, user);
+  }
+  
+  // Delete a UAM user
+  deleteUser(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+  
+  // Get audit logs for a specific user
+  getUserAuditLogs(userId: string): Observable<AuditLog[]> {
+    // This would be replaced with a real API call
+    return of(this.getMockAuditLogs().filter(log => log.employeeId === userId));
+  }
+  
+  // Mock data for audit logs
+  private getMockAuditLogs(): AuditLog[] {
+    return [
+      {
+        date: new Date().toISOString(),
+        employee: 'John Doe',
+        employeeId: '1001',
+        application: 'Email System',
+        actionType: 'Temporary',
+        duration: '30 days',
+        reason: 'Security policy violation',
+        officer: 'Admin User'
       },
       {
-        id: 'UAM-1002',
-        name: 'Sarah Johnson',
-        email: 'sarah.johnson@example.com',
-        role: 'Officer',
-        status: 'Active',
-        department: 'Security',
-        lastActive: '2023-05-14 09:45',
-        authorizedApps: ['Core Banking', 'E-Document Manager'],
-        employeeId: 'EMP-10046',
-        applications: [
-          {
-            id: 'app1',
-            name: 'Core Banking',
-            platform: 'Web Application',
-            accessLevel: 'User',
-            lastUsed: '2023-05-13',
-            icon: 'university',
-            iconBg: '#4CAF50',
-            status: 'Active'
-          }
-        ]
+        date: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+        employee: 'Jane Smith',
+        employeeId: '1002',
+        application: 'CRM System',
+        actionType: 'Permanent',
+        reason: 'Employment termination',
+        officer: 'Admin User'
       }
     ];
   }
-  
-  private getMockAuditLogs(userId: string): AuditLog[] {
-    // Return different mock logs based on user ID
-    if (userId === 'UAM-1001') {
-      return [
-        {
-          id: 'log-js-1',
-          date: '15 May 2023, 14:30',
-          employee: 'John Smith',
-          employeeId: 'UAM-1001',
-          application: 'Core Banking',
-          actionType: 'Temporary',
-          duration: '30 days',
-          reason: 'Suspicious activity detected',
-          officer: 'Admin User',
-          expirationDate: '14 Jun 2023'
-        },
-        {
-          id: 'log-js-2',
-          date: '10 Apr 2023, 09:15',
-          employee: 'John Smith',
-          employeeId: 'UAM-1001',
-          application: 'Finnacle',
-          actionType: 'Reactivation',
-          reason: 'Issue resolved',
-          officer: 'Admin User'
-        },
-        {
-          id: 'log-js-3',
-          date: '05 Apr 2023, 11:30',
-          employee: 'John Smith',
-          employeeId: 'UAM-1001',
-          application: 'Finnacle',
-          actionType: 'Permanent',
-          reason: 'Security policy violation',
-          officer: 'Security Officer'
-        }
-      ];
-    } else if (userId === 'UAM-1002') {
-      return [
-        {
-          id: 'log-sj-1',
-          date: '12 May 2023, 10:45',
-          employee: 'Sarah Johnson',
-          employeeId: 'UAM-1002',
-          application: 'E-Document Manager',
-          actionType: 'Temporary',
-          duration: '14 days',
-          reason: 'Scheduled maintenance',
-          officer: 'System Admin',
-          expirationDate: '26 May 2023'
-        },
-        {
-          id: 'log-sj-2',
-          date: '20 Mar 2023, 16:20',
-          employee: 'Sarah Johnson',
-          employeeId: 'UAM-1002',
-          application: 'Core Banking',
-          actionType: 'Temporary',
-          duration: '7 days',
-          reason: 'Unusual login pattern',
-          officer: 'Security Team',
-          expirationDate: '27 Mar 2023'
-        },
-        {
-          id: 'log-sj-3',
-          date: '27 Mar 2023, 09:00',
-          employee: 'Sarah Johnson',
-          employeeId: 'UAM-1002',
-          application: 'Core Banking',
-          actionType: 'Reactivation',
-          reason: 'Temporary deactivation period ended',
-          officer: 'System Admin'
-        }
-      ];
-    } else {
-      return [];
-    }
+
+  // Mock data for testing
+  private getMockUsers(): UAMUser[] {
+    const now = new Date();
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const lastWeek = new Date(now);
+    lastWeek.setDate(now.getDate() - 7);
+    const lastMonth = new Date(now);
+    lastMonth.setMonth(now.getMonth() - 1);
+    
+    return [
+      {
+        id: 'user-1',
+        name: 'John Smith',
+        email: 'john.smith@example.com',
+        role: 'Supervisor',
+        department: 'IT',
+        status: 'Active',
+        lastActive: now.toISOString()
+      },
+      {
+        id: 'user-2',
+        name: 'Sarah Johnson',
+        email: 'sarah.johnson@example.com',
+        role: 'Officer',
+        department: 'Security',
+        status: 'Active',
+        lastActive: yesterday.toISOString()
+      },
+      {
+        id: 'user-3',
+        name: 'Michael Brown',
+        email: 'michael.brown@example.com',
+        role: 'Officer',
+        department: 'Operations',
+        status: 'Inactive',
+        lastActive: lastWeek.toISOString()
+      },
+      {
+        id: 'user-4',
+        name: 'Emily Davis',
+        email: 'emily.davis@example.com',
+        role: 'Supervisor',
+        department: 'Finance',
+        status: 'Active',
+        lastActive: lastMonth.toISOString()
+      },
+      {
+        id: 'user-5',
+        name: 'Robert Wilson',
+        email: 'robert.wilson@example.com',
+        role: 'Officer',
+        department: 'Security',
+        status: 'Active',
+        lastActive: now.toISOString()
+      }
+    ];
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

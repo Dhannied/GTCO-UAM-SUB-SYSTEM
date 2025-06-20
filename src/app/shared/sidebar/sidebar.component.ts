@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
+import { Component, Input, ViewEncapsulation } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -7,16 +7,12 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './sidebar.component.html',
+  encapsulation: ViewEncapsulation.None,
   styleUrls: ['./sidebar.component.css']
 })
 export class SidebarComponent {
   @Input() activeRoute: string = '';
-  
-  constructor(private router: Router) {}
-  
-  navigateToUserManagement(): void {
-    this.router.navigate(['/user-management']);
-  }
 }
+
 
 

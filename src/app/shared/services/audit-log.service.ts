@@ -1,268 +1,151 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of, BehaviorSubject } from 'rxjs';
+import { tap, catchError, map } from 'rxjs/operators';
 import { AuditLog } from '../models/audit-log.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuditLogService {
-  // Central store of all audit logs
-  private auditLogsSubject = new BehaviorSubject<AuditLog[]>([]);
-  public auditLogs$ = this.auditLogsSubject.asObservable();
+  private apiUrl = `${environment.apiUrl}/audit-logs`;
+  private logsSubject = new BehaviorSubject<AuditLog[]>([]);
+  public logs$ = this.logsSubject.asObservable();
   
-  // Mock data for initial logs
-  private initialLogs: AuditLog[] = [
-    {
-      id: 'log1',
-      date: '15 Jun 2025, 14:32',
-      employee: 'John Doe',
-      employeeId: 'EMP-10045',
-      application: 'Core Banking',
-      actionType: 'Temporary',
-      duration: '14 days',
-      reason: 'Employee on leave',
-      officer: 'Sarah James'
-    },
-    {
-      id: 'log2',
-      date: '10 May 2025, 09:15',
-      employee: 'Jane Smith',
-      employeeId: 'EMP-10046',
-      application: 'Business Intelligence',
-      actionType: 'Permanent',
-      reason: 'Role change',
-      officer: 'Robert Wilson'
-    },
-    {
-      id: 'log3',
-      date: '05 May 2025, 11:20',
-      employee: 'Michael Brown',
-      employeeId: 'EMP-10047',
-      application: 'Loan Management',
-      actionType: 'Reactivation',
-      reason: 'Access review approval',
-      officer: 'Thomas Anderson'
-    },
-    {
-      id: 'log4',
-      date: '28 Apr 2025, 16:45',
-      employee: 'Sarah Johnson',
-      employeeId: 'EMP-10048',
-      application: 'HR Management',
-      actionType: 'Permanent',
-      reason: 'Department transfer',
-      officer: 'Robert Wilson'
-    },
-    {
-      id: 'log5',
-      date: '15 Apr 2025, 13:20',
-      employee: 'Robert Wilson',
-      employeeId: 'EMP-10049',
-      application: 'Core Banking',
-      actionType: 'Temporary',
-      duration: '7 days',
-      reason: 'Security policy update',
-      officer: 'Sarah James'
-    },
-    {
-      id: 'log6',
-      date: '10 Apr 2025, 11:30',
-      employee: 'Thomas Anderson',
-      employeeId: 'EMP-10050',
-      application: 'Business Intelligence',
-      actionType: 'Permanent',
-      reason: 'Role change',
-      officer: 'Robert Wilson'
-    },
-    {
-      id: 'log7',
-      date: '05 Apr 2025, 09:15',
-      employee: 'Drew Cano',
-      employeeId: 'EMP-10051',
-      application: 'Core Banking',
-      actionType: 'Temporary',
-      duration: '14 days',
-      reason: 'Employee on leave',
-      officer: 'Sarah James'
-    },
-    {
-      id: 'log8',
-      date: '01 Apr 2025, 14:45',
-      employee: 'Orlando Diggs',
-      employeeId: 'EMP-10052',
-      application: 'Cash Management',
-      actionType: 'Reactivation',
-      reason: 'Access review approval',
-      officer: 'Thomas Anderson'
-    },
-    {
-      id: 'log9',
-      date: '28 Mar 2025, 10:30',
-      employee: 'Andi Lane',
-      employeeId: 'EMP-10053',
-      application: 'Customer Relationship',
-      actionType: 'Permanent',
-      reason: 'Role elimination',
-      officer: 'Robert Wilson'
-    },
-    {
-      id: 'log10',
-      date: '25 Mar 2025, 15:20',
-      employee: 'John Doe',
-      employeeId: 'EMP-10045',
-      application: 'HR Management',
-      actionType: 'Temporary',
-      duration: '30 days',
-      reason: 'Department transfer',
-      officer: 'Sarah James'
-    }
-  ];
-
-  constructor() {
-    // Initialize with mock data
-    this.auditLogsSubject.next(this.initialLogs);
+  // Local cache of logs
+  private logs: AuditLog[] = [];
+  
+  constructor(private http: HttpClient) {
+    // Load logs when service is initialized
+    this.refreshLogs();
   }
-
-  // Get all audit logs
+  
+  // Method to refresh logs from the server
+  refreshLogs(): void {
+    this.getAllLogs().subscribe();
+  }
+  
   getAllLogs(): Observable<AuditLog[]> {
-    return this.auditLogs$;
+    return this.http.get<AuditLog[]>(this.apiUrl).pipe(
+      tap(logs => {
+        console.log(`Fetched ${logs.length} audit logs from API`);
+        this.logs = logs;
+        this.logsSubject.next(logs);
+      }),
+      catchError(error => {
+        console.error('Error fetching audit logs', error);
+        return of(this.logs); // Return cached logs on error
+      })
+    );
   }
-
-  // Get logs for a specific employee
+  
   getLogsByEmployee(employeeId: string): Observable<AuditLog[]> {
-    return new Observable<AuditLog[]>(observer => {
-      this.auditLogs$.subscribe(logs => {
-        const filteredLogs = logs.filter(log => log.employeeId === employeeId);
-        observer.next(filteredLogs);
-      });
-    });
+    console.log(`Fetching audit logs for employee: ${employeeId}`);
+    return this.http.get<AuditLog[]>(`${this.apiUrl}/employee/${employeeId}`).pipe(
+      tap(logs => console.log(`Fetched ${logs.length} audit logs for employee ${employeeId}`)),
+      catchError(error => {
+        console.error(`Error fetching audit logs for employee ${employeeId}`, error);
+        // If API fails, filter from local cache
+        const filteredLogs = this.logs.filter(log => log.employeeId === employeeId);
+        return of(filteredLogs);
+      })
+    );
   }
-
-  // Get logs for a specific application
-  getLogsByApplication(application: string): Observable<AuditLog[]> {
-    return new Observable<AuditLog[]>(observer => {
-      this.auditLogs$.subscribe(logs => {
-        const filteredLogs = logs.filter(log => log.application === application);
-        observer.next(filteredLogs);
-      });
-    });
-  }
-
-  // Get logs for a specific action type
-  getLogsByActionType(actionType: 'Temporary' | 'Permanent' | 'Reactivation'): Observable<AuditLog[]> {
-    return new Observable<AuditLog[]>(observer => {
-      this.auditLogs$.subscribe(logs => {
-        const filteredLogs = logs.filter(log => log.actionType === actionType);
-        observer.next(filteredLogs);
-      });
-    });
-  }
-
-  // Get logs for a specific date range
-  getLogsByDateRange(startDate: Date, endDate: Date): Observable<AuditLog[]> {
-    return new Observable<AuditLog[]>(observer => {
-      this.auditLogs$.subscribe(logs => {
-        const filteredLogs = logs.filter(log => {
-          const logDate = new Date(log.date);
-          return logDate >= startDate && logDate <= endDate;
-        });
-        observer.next(filteredLogs);
-      });
-    });
-  }
-
-  // Add a new audit log
-  addLog(log: AuditLog): void {
-    // Generate a unique ID if not provided
-    if (!log.id) {
-      log.id = 'log' + (this.auditLogsSubject.value.length + 1);
-    }
+  
+  // Add a log entry
+  addLog(log: AuditLog): Observable<AuditLog> {
+    console.log('Adding audit log:', log);
     
-    // Format the date if it's a Date object
-    if (typeof log.date === 'object' && log.date !== null) {
-      log.date = this.formatDate(log.date as Date);
-    }
-    
-    // Add the new log to the beginning of the array
-    const currentLogs = this.auditLogsSubject.value;
-    this.auditLogsSubject.next([log, ...currentLogs]);
+    // Add to the API
+    return this.http.post<AuditLog>(`${this.apiUrl}`, log).pipe(
+      tap(savedLog => {
+        console.log('Audit log saved to API:', savedLog);
+        
+        // Also update the local cache
+        const updatedLogs = [savedLog, ...this.logs];
+        this.logsSubject.next(updatedLogs);
+        this.logs = updatedLogs;
+      }),
+      catchError(error => {
+        console.error('Error saving audit log to API:', error);
+        
+        // Still update local cache even if API fails
+        const tempLog = { ...log, id: 'temp-' + new Date().getTime() };
+        const updatedLogs = [tempLog, ...this.logs];
+        this.logsSubject.next(updatedLogs);
+        this.logs = updatedLogs;
+        
+        // Return the log with a temporary ID
+        return of(tempLog);
+      })
+    );
   }
 
-  // Format date to match the application's format
-  private formatDate(date: Date): string {
-    return date.toLocaleString('en-US', { 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
-    });
+  getAnalyticsData() {
+    // Return an observable with analytics data
+    return this.logs$.pipe(
+      map(logs => {
+        // Process logs to create analytics data
+        // This is a placeholder implementation
+        return {
+          totalDeactivations: logs.length,
+          byApplication: this.getDeactivationsByApplication(logs),
+          byActionType: this.getDeactivationsByActionType(logs),
+          byReason: this.getDeactivationsByReason(logs)
+        };
+      })
+    );
   }
 
-  // Get analytics data
-  getAnalyticsData(): Observable<any> {
-    return new Observable<any>(observer => {
-      this.auditLogs$.subscribe(logs => {
-        // Calculate total deactivations
-        const totalDeactivations = logs.filter(log => 
-          log.actionType === 'Temporary' || log.actionType === 'Permanent'
-        ).length;
-        
-        // Calculate temporary deactivations
-        const temporaryDeactivations = logs.filter(log => 
-          log.actionType === 'Temporary'
-        ).length;
-        
-        // Calculate permanent deactivations
-        const permanentDeactivations = logs.filter(log => 
-          log.actionType === 'Permanent'
-        ).length;
-        
-        // Calculate deactivations by application
-        const applicationCounts: {[key: string]: number} = {};
-        logs.forEach(log => {
-          if (log.actionType === 'Temporary' || log.actionType === 'Permanent') {
-            if (!applicationCounts[log.application]) {
-              applicationCounts[log.application] = 0;
-            }
-            applicationCounts[log.application]++;
-          }
-        });
-        
-        // Calculate deactivations by reason
-        const reasonCounts: {[key: string]: number} = {};
-        logs.forEach(log => {
-          if (log.actionType === 'Temporary' || log.actionType === 'Permanent') {
-            if (!reasonCounts[log.reason]) {
-              reasonCounts[log.reason] = 0;
-            }
-            reasonCounts[log.reason]++;
-          }
-        });
-        
-        // Calculate deactivations by department
-        // We'll need to extract department from employee data
-        // For now, we'll use mock data
-        const departmentData = [
-          { department: 'IT', count: 0 },
-          { department: 'Finance', count: 0 },
-          { department: 'HR', count: 0 },
-          { department: 'Operations', count: 0 },
-          { department: 'Marketing', count: 0 }
-        ];
-        
-        // Return the analytics data
-        observer.next({
-          totalDeactivations,
-          temporaryDeactivations,
-          permanentDeactivations,
-          applicationCounts,
-          reasonCounts,
-          departmentData
-        });
-      });
+  getLogsByDateRange(startDate: Date, endDate: Date) {
+    // Return logs filtered by date range
+    return this.logs$.pipe(
+      map(logs => logs.filter(log => {
+        const logDate = new Date(log.date);
+        return logDate >= startDate && logDate <= endDate;
+      }))
+    );
+  }
+
+  private getDeactivationsByApplication(logs: AuditLog[]) {
+    const result: {[key: string]: number} = {};
+    logs.forEach(log => {
+      if (log.application) {
+        if (!result[log.application]) {
+          result[log.application] = 0;
+        }
+        result[log.application]++;
+      }
     });
+    return result;
+  }
+
+  private getDeactivationsByActionType(logs: AuditLog[]) {
+    const result: {[key: string]: number} = {
+      'Temporary': 0,
+      'Permanent': 0,
+      'Reactivation': 0
+    };
+    logs.forEach(log => {
+      if (log.actionType && result.hasOwnProperty(log.actionType)) {
+        result[log.actionType]++;
+      }
+    });
+    return result;
+  }
+
+  private getDeactivationsByReason(logs: AuditLog[]) {
+    const result: {[key: string]: number} = {};
+    logs.forEach(log => {
+      if (log.reason) {
+        if (!result[log.reason]) {
+          result[log.reason] = 0;
+        }
+        result[log.reason]++;
+      }
+    });
+    return result;
   }
 }
 

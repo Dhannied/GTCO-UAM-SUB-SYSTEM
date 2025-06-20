@@ -47,4 +47,12 @@ export class UsersController {
   remove(@Param('id') id: string): Promise<void> {
     return this.usersService.remove(id);
   }
+
+  @Post('generate-mock')
+  @ApiOperation({ summary: 'Generate mock employees' })
+  @ApiResponse({ status: 201, description: 'Mock employees created successfully', type: [User] })
+  generateMockEmployees(@Body() options: { count?: number } = {}): Promise<User[]> {
+    const count = options.count || 20; // Default to 20 if not specified
+    return this.usersService.generateMockEmployees(count);
+  }
 }

@@ -43,6 +43,14 @@ __decorate([
     __metadata("design:type", String)
 ], AuditLog.prototype, "officer", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], AuditLog.prototype, "department", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], AuditLog.prototype, "duration", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], AuditLog.prototype, "date", void 0);

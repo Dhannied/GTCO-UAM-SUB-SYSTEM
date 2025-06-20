@@ -4,12 +4,12 @@
 
   <!-- Main Content -->
   <div class="main-content">
-    <!-- Header (not fixed) -->
+    <!-- Header -->
     <div class="dashboard-header">
       <div class="header-content">
         <div>
           <h1>Welcome Back, <span class="user-name">{{ userName }}</span></h1>
-          <p class="user-info">Role: {{ userRole }} | Last Login: {{ lastLogin }}</p>
+          <p class="user-info">Role: <span class="user-role">{{ userRole }}</span> | Last Login: <span class="last-login">{{ lastLogin }}</span></p>
         </div>
       </div>
     </div>
@@ -38,34 +38,22 @@
     </div>
 
     <!-- Custom Date Range Dialog -->
-    <div class="modal-overlay" *ngIf="showDateRangeDialog">
-      <div class="date-range-dialog">
-        <div class="dialog-header">
-          <h3>Select Date Range</h3>
-          <button class="close-btn" (click)="cancelDateRangeDialog()">×</button>
-        </div>
-        
-        <div class="dialog-content">
+    <div class="date-range-dialog" *ngIf="showDateRangeDialog">
+      <div class="dialog-content">
+        <h3>Select Date Range</h3>
+        <div class="date-inputs">
           <div class="date-field">
-            <label for="startDate">From:</label>
-            <div class="date-input">
-              <input type="date" id="startDate" [(ngModel)]="tempStartDate">
-              <i class="fas fa-calendar-alt"></i>
-            </div>
+            <label for="startDate">Start Date</label>
+            <input type="date" id="startDate" [(ngModel)]="tempStartDate">
           </div>
-          
           <div class="date-field">
-            <label for="endDate">To:</label>
-            <div class="date-input">
-              <input type="date" id="endDate" [(ngModel)]="tempEndDate">
-              <i class="fas fa-calendar-alt"></i>
-            </div>
+            <label for="endDate">End Date</label>
+            <input type="date" id="endDate" [(ngModel)]="tempEndDate">
           </div>
         </div>
-        
-        <div class="dialog-footer">
-          <button class="cancel-btn" (click)="cancelDateRangeDialog()">Cancel</button>
-          <button class="apply-btn" (click)="applyDateRange()">Apply</button>
+        <div class="dialog-actions">
+          <button class="cancel-btn" (click)="cancelCustomDateRange()">Cancel</button>
+          <button class="apply-btn" (click)="applyCustomDateRange()">Apply</button>
         </div>
       </div>
     </div>
@@ -78,7 +66,7 @@
           <div class="stats-icon"><i class="fas fa-file-alt"></i></div>
           <div class="stats-info">
             <div class="stats-title">Total Deactivations</div>
-            <div class="stats-value">{{ totalDeactivations }}</div>
+            <div class="stats-value">{{ totalDeactivations || 0 }}</div>
           </div>
         </div>
         
@@ -86,7 +74,7 @@
           <div class="stats-icon"><i class="fas fa-users"></i></div>
           <div class="stats-info">
             <div class="stats-title">Total Reactivations</div>
-            <div class="stats-value">{{ totalReactivations }}</div>
+            <div class="stats-value">{{ totalReactivations || 0 }}</div>
           </div>
         </div>
         
@@ -94,7 +82,7 @@
           <div class="stats-icon"><i class="fas fa-clock"></i></div>
           <div class="stats-info">
             <div class="stats-title">Temporary Deactivations</div>
-            <div class="stats-value">{{ temporaryDeactivations }}</div>
+            <div class="stats-value">{{ temporaryDeactivations || 0 }}</div>
           </div>
         </div>
         
@@ -102,7 +90,7 @@
           <div class="stats-icon"><i class="fas fa-ban"></i></div>
           <div class="stats-info">
             <div class="stats-title">Permanent Deactivations</div>
-            <div class="stats-value">{{ permanentDeactivations }}</div>
+            <div class="stats-value">{{ permanentDeactivations || 0 }}</div>
           </div>
         </div>
       </div>
@@ -111,14 +99,18 @@
       <div class="top-apps">
         <h2>Top Deactivated Apps</h2>
         <div class="app-list">
-          @for (app of topDeactivatedApps; track app.name) {
-            <div class="app-item">
-              <div class="app-name">{{ app.name }}</div>
-              <div class="app-bar-container">
-                <div class="app-bar" [style.width.%]="getAppBarPercentage(app)"></div>
+          @if (topDeactivatedApps.length > 0) {
+            @for (app of topDeactivatedApps; track app.name) {
+              <div class="app-item">
+                <div class="app-name">{{ app.name }}</div>
+                <div class="app-bar-container">
+                  <div class="app-bar" [style.width.%]="getAppBarPercentage(app)"></div>
+                </div>
+                <div class="app-count">{{ app.count }}</div>
               </div>
-              <div class="app-count">{{ app.count }}</div>
-            </div>
+            }
+          } @else {
+            <div class="no-data">No deactivation data available</div>
           }
         </div>
       </div>
@@ -127,15 +119,19 @@
     <!-- Recent Activities -->
     <div class="recent-activities">
       <h2>Recent Activities</h2>
-      <app-audit-log-table 
-        [logs]="recentActivities.slice(0, 4)"
-        [showEmployee]="true"
-        [showReason]="true"
-        [showDuration]="true"
-        [showOfficer]="true"
-        [showPagination]="false"
-        [maxHeight]="'auto'"
-      ></app-audit-log-table>
+      @if (recentActivities.length > 0) {
+        <app-audit-log-table 
+          [logs]="recentActivities.slice(0, 4)"
+          [showEmployee]="true"
+          [showReason]="true"
+          [showDuration]="true"
+          [showOfficer]="true"
+          [showPagination]="false"
+          [maxHeight]="'auto'"
+        ></app-audit-log-table>
+      } @else {
+        <div class="no-data">No recent activities available</div>
+      }
     </div>
   </div>
 </div>
@@ -144,6 +140,9 @@
 
 <!-- Remove this duplicate script tag at the bottom of the file -->
 <!-- <script src="https://kit.fontawesome.com/c86695b7cc.js" crossorigin="anonymous"></script> -->
+
+
+
 
 
 

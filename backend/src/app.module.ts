@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ApplicationsModule } from './applications/applications.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
+import { UamUsersModule } from './uam-users/uam-users.module';
 
 @Module({
   imports: [
@@ -30,7 +31,10 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module';
     AuthModule,
     ApplicationsModule,
     AuditLogsModule,
+    UamUsersModule,
   ],
 })
 export class AppModule {}
+
+
 

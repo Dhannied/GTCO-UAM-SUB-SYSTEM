@@ -639,12 +639,24 @@
 
 .selected-employees-list {
   margin-top: 10px;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 .selected-employee {
-  padding: 8px 0;
-  border-bottom: 1px solid #f5f5f5;
+  padding: 8px 12px;
+  margin-bottom: 5px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  border-left: 3px solid #dd4f05;
   font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.selected-employee:last-child {
+  margin-bottom: 0;
 }
 
 .selected-employees-count {
@@ -669,7 +681,7 @@
   overflow-y: auto;
   border: 1px solid #eee;
   border-radius: 4px;
-  padding: 10px;
+  padding: 5px;
 }
 
 .modal-footer {
@@ -981,5 +993,6 @@ h1 {
 .header-action-btn.bulk-deactivate-btn i {
   font-size: 14px;
 }
+
 
 

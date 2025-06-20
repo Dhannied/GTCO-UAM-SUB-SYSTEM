@@ -6,5 +6,7 @@ export declare class AuditLog {
     actionType: string;
     reason: string;
     officer: string;
+    department: string;
+    duration: string;
     date: Date;
 }

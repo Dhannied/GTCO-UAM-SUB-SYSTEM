@@ -1,12 +1,11 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
-import { PageNotFoundComponent } from './shared/components/page-not-found/page-not-found.component';
 
 export const routes: Routes = [
-  { 
-    path: '', 
-    redirectTo: 'dashboard', 
-    pathMatch: 'full' 
+  {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full'
   },
   {
     path: 'login',
@@ -18,22 +17,37 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'employees',
+    loadComponent: () => import('./employees/employees.component').then(m => m.EmployeesComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'employee/:id',
+    loadComponent: () => import('./employee-details/employee-details.component').then(m => m.EmployeeDetailsComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'audit-trail',
+    loadComponent: () => import('./audit-trail/audit-trail.component').then(m => m.AuditTrailComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'analytics',
+    loadComponent: () => import('./analytics/analytics.component').then(m => m.AnalyticsComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'user-management',
     loadComponent: () => import('./user-management/user-management.component').then(m => m.UserManagementComponent),
     canActivate: [authGuard]
   },
   {
-    path: 'applications',
-    loadComponent: () => import('./employee-details/employee-details.component').then(m => m.EmployeeDetailsComponent),
+    path: 'user-management/user/:id',
+    loadComponent: () => import('./user-management/user-details/user-details.component').then(m => m.UserDetailsComponent),
     canActivate: [authGuard]
   },
   {
-    path: 'audit-logs',
-    loadComponent: () => import('./audit-trail/audit-trail.component').then(m => m.AuditTrailComponent),
-    canActivate: [authGuard]
-  },
-  { 
-    path: '**', 
-    component: PageNotFoundComponent 
+    path: '**',
+    redirectTo: 'dashboard'
   }
 ];

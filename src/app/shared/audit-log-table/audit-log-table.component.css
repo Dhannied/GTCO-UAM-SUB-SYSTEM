@@ -37,6 +37,15 @@ td {
   font-size: 14px;
 }
 
+td span {
+  display: inline-block;
+}
+
+td span.expiration-date {
+  font-weight: 500;
+  color: #555;
+}
+
 .employee-cell {
   display: flex;
   align-items: flex-start;
@@ -56,6 +65,14 @@ td {
 .employee-id {
   font-size: 12px;
   color: #666;
+  font-family: 'Roboto', sans-serif;
+  background-color: #f5f5f5;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  max-width: fit-content;
+  border: 1px solid #eee;
+  letter-spacing: 0.5px;
 }
 
 /* Action type badges */
@@ -156,7 +173,17 @@ td {
   color: #666;
 }
 
+/* Add styles for the date/time column */
+.audit-log-table td:first-child {
+  white-space: nowrap;
+  color: #555;
+  font-weight: 500;
+}
 
+/* Add a subtle hover effect for rows */
+.audit-log-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
 
 
 

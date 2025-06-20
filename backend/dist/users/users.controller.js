@@ -38,6 +38,10 @@ let UsersController = class UsersController {
     remove(id) {
         return this.usersService.remove(id);
     }
+    generateMockEmployees(options = {}) {
+        const count = options.count || 20;
+        return this.usersService.generateMockEmployees(count);
+    }
 };
 exports.UsersController = UsersController;
 __decorate([
@@ -88,6 +92,15 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)('generate-mock'),
+    (0, swagger_1.ApiOperation)({ summary: 'Generate mock employees' }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: 'Mock employees created successfully', type: [user_entity_1.User] }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "generateMockEmployees", null);
 exports.UsersController = UsersController = __decorate([
     (0, swagger_1.ApiTags)('users'),
     (0, common_1.Controller)('users'),

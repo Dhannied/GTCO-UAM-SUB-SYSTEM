@@ -1,25 +1,33 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { AuditLogService } from '../shared/services/audit-log.service';
 import { AuditLog } from '../shared/models/audit-log.model';
+import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../shared/sidebar/sidebar.component';
 import { AuditLogTableComponent } from '../shared/audit-log-table/audit-log-table.component';
-// import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-audit-trail',
-  standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, SidebarComponent, AuditLogTableComponent],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA], // Use CUSTOM_ELEMENTS_SCHEMA instead
   templateUrl: './audit-trail.component.html',
-  styleUrls: ['./audit-trail.component.css']
+  styleUrls: ['./audit-trail.component.css'],
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    SidebarComponent,
+    AuditLogTableComponent
+  ]
 })
-export class AuditTrailComponent implements OnInit {
+export class AuditTrailComponent implements OnInit, OnDestroy {
   // Math object for template
   Math = Math;
   
+  // Subscriptions
+  private logSubscription: Subscription | null = null;
+  
+  // Other properties remain the same
   searchTerm: string = '';
   startDate: string = '';
   endDate: string = '';
@@ -29,70 +37,49 @@ export class AuditTrailComponent implements OnInit {
   applicationFilter: string = 'All Applications';
   officerFilter: string = 'All Officers';
   
-  // Current user info - in a real app, this would come from an auth service
+  // Current user info
   currentUser: string = 'Current User';
   
   // Pagination
   currentPage: number = 1;
-  itemsPerPage: number = 8;  // Changed from 10 to 8
-  
-  // Pagination methods
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
-  }
-  
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-    }
-  }
-  
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-    }
-  }
+  itemsPerPage: number = 8;
   
   // All audit logs
   auditLogs: AuditLog[] = [];
+  filteredLogs: AuditLog[] = [];
   
-  // Get unique applications for filter dropdown
-  get uniqueApplications(): string[] {
-    const apps = this.auditLogs.map(log => log.application);
-    return [...new Set(apps)].sort();
-  }
+  // For date range dialog
+  showDateRangeDialog: boolean = false;
+  tempStartDate: string = '';
+  tempEndDate: string = '';
+  
+  // Unique applications for filter dropdown
+  uniqueApplications: string[] = [];
   
   constructor(private auditLogService: AuditLogService) { }
   
   ngOnInit(): void {
-    this.loadAuditLogs();
-  }
-  
-  loadAuditLogs(): void {
-    this.auditLogService.getAllLogs().subscribe(logs => {
-      console.log('Audit Trail Component - All logs loaded:', logs.length);
-      
-      // Count by action type for debugging
-      const tempCount = logs.filter(log => log.actionType === 'Temporary').length;
-      const permCount = logs.filter(log => log.actionType === 'Permanent').length;
-      const reactCount = logs.filter(log => log.actionType === 'Reactivation').length;
-      
-      console.log('Audit Trail Component - Action type counts:', {
-        temporary: tempCount,
-        permanent: permCount,
-        reactivation: reactCount,
-        total: logs.length
-      });
-      
+    // Force refresh logs from server
+    this.auditLogService.refreshLogs();
+    
+    // Subscribe to logs$ observable to get real-time updates
+    this.logSubscription = this.auditLogService.logs$.subscribe(logs => {
+      console.log('Audit Trail Component - Received updated logs:', logs.length);
       this.auditLogs = logs;
       this.applyFilters();
+      
+      // Extract unique applications for filter
+      this.uniqueApplications = [...new Set(logs.map(log => log.application).filter(app => app))];
     });
   }
   
-  filteredLogs: AuditLog[] = [];
-
+  ngOnDestroy(): void {
+    // Clean up subscription
+    if (this.logSubscription) {
+      this.logSubscription.unsubscribe();
+    }
+  }
+  
   get paginatedLogs(): AuditLog[] {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const paginatedData = this.filteredLogs.slice(startIndex, startIndex + this.itemsPerPage);
@@ -109,60 +96,100 @@ export class AuditTrailComponent implements OnInit {
     this.clearFilters(); // Also clear filters when clearing search
   }
 
+  // Add pagination methods
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
+
+  // Add method for date preset change
+  onDatePresetChange(): void {
+    if (this.datePreset === 'custom') {
+      this.showDateRangeDialog = true;
+      this.tempStartDate = this.startDate;
+      this.tempEndDate = this.endDate;
+    } else {
+      this.applyFilters();
+    }
+  }
+
+  // Add method to apply date range
+  applyDateRange(): void {
+    this.startDate = this.tempStartDate;
+    this.endDate = this.tempEndDate;
+    this.showDateRangeDialog = false;
+    this.applyFilters();
+  }
+
+  // Add method to cancel date range dialog
+  cancelDateRange(): void {
+    this.showDateRangeDialog = false;
+    if (!this.startDate || !this.endDate) {
+      this.datePreset = 'all';
+    }
+  }
+
+  // Add method to clear filters
+  clearFilters(): void {
+    this.datePreset = 'all';
+    this.startDate = '';
+    this.endDate = '';
+    this.actionTypeFilter = 'All Actions';
+    this.applicationFilter = 'All Applications';
+    this.officerFilter = 'All Officers';
+    this.applyFilters();
+  }
+
   exportAuditTrails(): void {
     // Create CSV content
     let csvContent = 'Date,Employee,Employee ID,Application,Action Type,Expiration Date,Reason,Officer\n';
     
     // Add data rows
     this.filteredLogs.forEach(log => {
-      // Format each field and handle commas by wrapping in quotes if needed
-      const formatField = (field: string | Date): string => {
-        if (field === undefined || field === null) return '';
-        
-        // Convert Date objects to string
-        const fieldStr = field instanceof Date ? field.toLocaleString() : String(field);
-        
-        // If field contains commas, quotes, or newlines, wrap in quotes and escape any quotes
-        return fieldStr.includes(',') || fieldStr.includes('"') || fieldStr.includes('\n') 
-          ? `"${fieldStr.replace(/"/g, '""')}"` 
-          : fieldStr;
-      };
-      
-      // Calculate expiration date
-      let expirationDate = '';
-      if (log.actionType === 'Temporary') {
-        expirationDate = this.getExpirationDate(log);
-      } else {
-        expirationDate = 'Not Applicable';
-      }
-      
       const row = [
-        formatField(log.date),
-        formatField(log.employee || ''),
-        formatField(log.employeeId || ''),
-        formatField(log.application),
-        formatField(log.actionType),
-        formatField(expirationDate),
-        formatField(log.reason),
-        formatField(log.officer)
+        new Date(log.date).toLocaleDateString(),
+        log.employee || '',
+        log.employeeId || '',
+        log.application || '',
+        log.actionType || '',
+        log.expirationDate ? new Date(log.expirationDate).toLocaleDateString() : '',
+        log.reason || '',
+        log.officer || ''
       ];
       
-      csvContent += row.join(',') + '\n';
+      // Escape any commas in the data
+      const escapedRow = row.map(cell => {
+        if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
+          return `"${cell.replace(/"/g, '""')}"`;
+        }
+        return cell;
+      });
+      
+      csvContent += escapedRow.join(',') + '\n';
     });
     
-    // Create blob and download
+    // Create a blob and download link
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `audit-trails-${this.formatDate(new Date())}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-    
-    // Show success message
-    alert('Audit trails exported successfully!');
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `audit-trails-${this.formatDate(new Date())}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   // Helper method to format date for filename
@@ -193,33 +220,6 @@ export class AuditTrailComponent implements OnInit {
         (log.officer && log.officer.toLowerCase().includes(term))
       );
       console.log('After search filter:', filtered.length);
-    }
-    
-    // Apply date filter
-    if (this.datePreset !== 'all') {
-      const now = new Date();
-      let cutoffDate = new Date();
-      
-      switch (this.datePreset) {
-        case 'today':
-          cutoffDate.setHours(0, 0, 0, 0); // Start of today
-          break;
-        case 'week':
-          cutoffDate.setDate(now.getDate() - 7);
-          break;
-        case 'month':
-          cutoffDate.setDate(now.getDate() - 30);
-          break;
-        case 'quarter':
-          cutoffDate.setDate(now.getDate() - 90);
-          break;
-      }
-      
-      filtered = filtered.filter(log => {
-        const logDate = new Date(log.date);
-        return logDate >= cutoffDate;
-      });
-      console.log('After date filter:', filtered.length);
     }
     
     // Apply custom date range filter
@@ -260,7 +260,7 @@ export class AuditTrailComponent implements OnInit {
     if (this.officerFilter !== 'All Officers') {
       if (this.officerFilter === 'Current User') {
         filtered = filtered.filter(log => 
-          log.officer === 'Current User'
+          log.officer === this.currentUser
         );
       } else {
         filtered = filtered.filter(log => 
@@ -281,162 +281,6 @@ export class AuditTrailComponent implements OnInit {
     this.updatePagination();
   }
 
-  // Helper method to convert month name to number with proper typing
-  private getMonthNumber(monthName: string): number {
-    const months: { [key: string]: number } = {
-      'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
-      'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
-    };
-    
-    // Use type guard to check if the key exists in the months object
-    if (monthName in months) {
-      return months[monthName];
-    }
-    
-    // Return default value if month name is not found
-    console.warn(`Unknown month name: ${monthName}, defaulting to January (0)`);
-    return 0;
-  }
-
-  // Add methods to handle the clear filters functionality
-  clearFilters(): void {
-    this.datePreset = 'all';
-    this.startDate = '';
-    this.endDate = '';
-    
-    this.actionTypeFilter = 'All Actions';
-    this.applicationFilter = 'All Applications';
-    this.officerFilter = 'All Officers';
-    
-    // Apply the updated filters
-    this.applyFilters();
-  }
-
-  // Method to check if any filters are active
-  hasActiveFilters(): boolean {
-    return this.datePreset !== 'all' || 
-           this.actionTypeFilter !== 'All Actions' || 
-           this.applicationFilter !== 'All Applications' || 
-           this.officerFilter !== 'All Officers';
-  }
-
-  // Add properties for date range dialog
-  showDateRangeDialog: boolean = false;
-  tempStartDate: string = '';
-  tempEndDate: string = '';
-  selectedDateRangeText: string = 'All Time';
-
-  // Method to handle date preset change
-  onDatePresetChange(): void {
-    if (this.datePreset === 'custom') {
-      // Show the date range dialog
-      this.showDateRangeDialog = true;
-      
-      // Initialize with current values or defaults
-      if (!this.startDate || !this.endDate) {
-        const today = new Date();
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(today.getDate() - 30);
-        
-        this.tempStartDate = this.formatDateForInput(thirtyDaysAgo);
-        this.tempEndDate = this.formatDateForInput(today);
-      } else {
-        this.tempStartDate = this.startDate;
-        this.tempEndDate = this.endDate;
-      }
-    } else {
-      // Apply the selected preset directly
-      this.applyDatePreset();
-    }
-  }
-
-  // Method to cancel the date range dialog
-  cancelDateRangeDialog(): void {
-    this.showDateRangeDialog = false;
-    
-    // If we were previously using a different preset, revert to it
-    if (this.datePreset === 'custom' && !this.startDate) {
-      this.datePreset = 'all'; // Default to "All Time" if no custom range was previously set
-    }
-  }
-
-  // Method to apply the selected date range
-  applyDateRange(): void {
-    this.startDate = this.tempStartDate;
-    this.endDate = this.tempEndDate;
-    this.showDateRangeDialog = false;
-    
-    // Format the selected date range for display
-    try {
-      const startDate = new Date(this.startDate);
-      const endDate = new Date(this.endDate);
-      this.selectedDateRangeText = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
-    } catch (error) {
-      console.error('Error formatting date range text:', error);
-      this.selectedDateRangeText = 'Custom Range';
-    }
-    
-    // Apply filters with the new date range
-    this.applyFilters();
-  }
-
-  // Method to apply date presets
-  applyDatePreset(): void {
-    const today = new Date();
-    let startDate = new Date();
-    
-    switch (this.datePreset) {
-      case 'today':
-        // Set to start of today
-        startDate.setHours(0, 0, 0, 0);
-        this.selectedDateRangeText = 'Today';
-        break;
-      case 'week':
-        // Set to 7 days ago
-        startDate.setDate(today.getDate() - 7);
-        this.selectedDateRangeText = 'Last 7 Days';
-        break;
-      case 'month':
-        // Set to 30 days ago
-        startDate.setDate(today.getDate() - 30);
-        this.selectedDateRangeText = 'Last 30 Days';
-        break;
-      case 'quarter':
-        // Set to 90 days ago
-        startDate.setDate(today.getDate() - 90);
-        this.selectedDateRangeText = 'Last 90 Days';
-        break;
-      case 'all':
-        // For "All Time", we don't need specific dates
-        this.startDate = '';
-        this.endDate = '';
-        this.selectedDateRangeText = 'All Time';
-        this.applyFilters();
-        return;
-      case 'custom':
-        // This should be handled by the dialog, not here
-        return;
-    }
-    
-    // Format dates for input fields (YYYY-MM-DD)
-    this.startDate = this.formatDateForInput(startDate);
-    this.endDate = this.formatDateForInput(today);
-    
-    // Apply the filters with the new date range
-    this.applyFilters();
-  }
-
-  // Helper method to format dates for input fields
-  formatDateForInput(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  // Helper method to format date for file names
-  // This method is already defined elsewhere in the component, so we're removing the duplicate
-
   updatePagination(): void {
     // Calculate total pages
     const totalPages = Math.ceil(this.filteredLogs.length / this.itemsPerPage);
@@ -447,51 +291,10 @@ export class AuditTrailComponent implements OnInit {
     }
   }
 
-  // Add the getExpirationDate method if it doesn't exist in the component
-  getExpirationDate(log: AuditLog): string {
-    if (log.expirationDate) {
-      return log.expirationDate;
-    }
-    
-    if (!log.duration) {
-      return 'Unknown';
-    }
-    
-    // Parse the log date
-    const logDate = new Date(log.date);
-    
-    // Extract the number of days from the duration string
-    const durationMatch = log.duration.match(/(\d+)/);
-    if (!durationMatch) {
-      return log.duration; // Return original duration if parsing fails
-    }
-    
-    const days = parseInt(durationMatch[1], 10);
-    
-    // Calculate expiration date
-    const expirationDate = new Date(logDate);
-    expirationDate.setDate(logDate.getDate() + days);
-    
-    // Format the date as DD MMM YYYY
-    return expirationDate.toLocaleDateString('en-US', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
+  // Add this method to match the HTML template
+  cancelDateRangeDialog(): void {
+    this.cancelDateRange(); // Reuse the existing method
   }
 }
-
-// Remove the updatePagination method that's outside the class
-
-
-
-
-
-
-
-
-
-
-
 
 

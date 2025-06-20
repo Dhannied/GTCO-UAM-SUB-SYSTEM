@@ -6,9 +6,9 @@
   <div class="main-content">
     <!-- Header -->
     <div class="user-management-header">
-      <h1>User <span class="highlight">Management</span></h1>
+      <h1>UAM <span class="highlight">Officers</span></h1>
       <button class="add-user-btn" (click)="openAddUserModal()">
-        <i class="fas fa-plus"></i> Add User
+        <i class="fas fa-plus"></i> Add UAM Officer
       </button>
     </div>
     
@@ -18,8 +18,8 @@
         <i class="fas fa-search search-icon"></i>
         <input 
           type="text" 
-          placeholder="Search users..." 
-          [(ngModel)]="searchTerm"
+          placeholder="Search UAM officers..." 
+          [(ngModel)]="searchTerm" name="searchTerm"
         >
         <button *ngIf="searchTerm" class="clear-search" (click)="clearSearch()">
           <i class="fas fa-times"></i>
@@ -65,19 +65,10 @@
             </td>
             <td>{{ user.role }}</td>
             <td>{{ user.department }}</td>
-            <td>{{ user.lastActive }}</td>
+            <td>{{ formatLastActive(user.lastActive) }}</td>
             <td class="actions-cell">
-              <!-- Option 1: Use routerLink directly -->
-              <a [routerLink]="['/user-management/user', user.id]" class="view-btn">
-                <span>View</span>
-              </a>
-              
-              <!-- Option 2: If you prefer to keep the button, but with a more direct approach -->
-              <!-- 
-              <button class="view-btn" (click)="router.navigate(['/user-management/user', user.id])">
-                <span>View</span>
-              </button>
-              -->
+              <!-- Debug: {{user.id}} -->
+              <a [routerLink]="['/user-management/user', user.id]" class="view-btn">View</a>
             </td>
           </tr>
         </tbody>
@@ -262,13 +253,15 @@
       <button 
         class="submit-btn" 
         [disabled]="addUserForm.invalid || isOfficerWithNoApps()"
-        (click)="addNewUser()"
+        (click)="submitAddUserForm()"
       >
         Add User
       </button>
     </div>
   </div>
 </div>
+
+
 
 
 

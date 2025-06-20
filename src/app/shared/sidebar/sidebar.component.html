@@ -19,7 +19,7 @@
       <span class="icon"><i class="fas fa-users"></i></span>
       <span>Employees</span>
     </a>
-    <a class="nav-item" [class.active]="activeRoute === 'audit-trails'" routerLink="/audit-trails">
+    <a class="nav-item" [class.active]="activeRoute === 'audit-trail'" routerLink="/audit-trail">
       <span class="icon"><i class="fas fa-clipboard-list"></i></span>
       <span>Audit Trails</span>
     </a>
@@ -27,7 +27,7 @@
       <span class="icon"><i class="fas fa-chart-line"></i></span>
       <span>Analytics Report</span>
     </a>
-    <a class="nav-item" [class.active]="activeRoute === 'user-management'" routerLink="/user-management" (click)="navigateToUserManagement()">
+    <a class="nav-item" [class.active]="activeRoute === 'user-management'" routerLink="/user-management">
       <span class="icon"><i class="fas fa-user-cog"></i></span>
       <span>User Management</span>
     </a>
@@ -38,6 +38,8 @@
     <span>Logout</span>
   </a>
 </div>
+
+
 
 
 

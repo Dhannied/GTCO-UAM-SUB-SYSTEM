@@ -4,7 +4,7 @@ import { ApiService } from './api.service';
 import { User } from '../models/user.model';
 
 export interface LoginDto {
-  employeeId: string;
+  email: string;
   password: string;
 }
 
@@ -37,11 +37,24 @@ export class AuthService {
   login(credentials: LoginDto): Observable<LoginResponse> {
     return this.apiService.post<LoginResponse>('auth/login', credentials).pipe(
       tap(response => {
+        console.log('Login response from API:', response);
+        
         // Store user details and token in localStorage
         const userData = {
           ...response.user,
           accessToken: response.accessToken
         };
+        
+        console.log('User data to store:', userData);
+        
+        // If the API response doesn't include lastActive, use current time
+        if (!userData.lastActive) {
+          console.log('No lastActive in response, using current time');
+          userData.lastActive = new Date();
+        } else {
+          console.log('lastActive from response:', userData.lastActive);
+        }
+        
         localStorage.setItem('currentUser', JSON.stringify(userData));
         this.currentUserSubject.next(userData);
       })
@@ -49,6 +62,12 @@ export class AuthService {
   }
 
   logout(): void {
+    // Store the current lastActive time before logout
+    const currentUser = this.currentUser;
+    if (currentUser && currentUser.lastActive) {
+      localStorage.setItem('previousLastActive', currentUser.lastActive);
+    }
+    
     // Remove user from local storage
     localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
@@ -66,6 +85,13 @@ export class AuthService {
     return !!this.token;
   }
 }
+
+
+
+
+
+
+
 
 
 

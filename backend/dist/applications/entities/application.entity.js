@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Application = void 0;
 const typeorm_1 = require("typeorm");
 const user_entity_1 = require("../../users/entities/user.entity");
+const uam_user_entity_1 = require("../../uam-users/entities/uam-user.entity");
 let Application = class Application {
 };
 exports.Application = Application;
@@ -52,9 +53,13 @@ __decorate([
     __metadata("design:type", String)
 ], Application.prototype, "deactivationType", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, user => user.applications),
+    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, user => user.applications, { nullable: true }),
     __metadata("design:type", user_entity_1.User)
 ], Application.prototype, "user", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => uam_user_entity_1.UamUser, uamUser => uamUser.applications, { nullable: true }),
+    __metadata("design:type", uam_user_entity_1.UamUser)
+], Application.prototype, "uamUser", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)

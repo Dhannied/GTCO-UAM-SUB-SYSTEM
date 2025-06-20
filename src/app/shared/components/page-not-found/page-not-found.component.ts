@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-page-not-found',
   standalone: true,
   imports: [RouterLink],
+  encapsulation: ViewEncapsulation.None,
   template: `
     <div class="container">
       <h1>404 - Page Not Found</h1>

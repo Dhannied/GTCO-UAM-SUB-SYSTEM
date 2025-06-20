@@ -13,7 +13,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let log of paginatedLogs">
-        <td>{{ log.date }}</td>
+        <td>{{ formatDate(log.date) }}</td>
         <td *ngIf="showEmployee" class="employee-cell">
           <div class="employee-info">
             <span class="employee-name">{{ log.employee }}</span>
@@ -49,6 +49,12 @@
   <span>Page {{ currentPage }} of {{ totalPages }}</span>
   <button [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Next</button>
 </div>
+
+
+
+
+
+
 
 
 

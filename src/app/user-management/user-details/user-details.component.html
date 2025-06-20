@@ -1,211 +1,73 @@
 <div class="user-details-container">
-  <!-- Debugging message -->
-  <div *ngIf="!user" style="color: red; padding: 20px;">
-    User not found. ID: {{userId}}
-  </div>
-  
-  <!-- Use the shared sidebar component -->
   <app-sidebar activeRoute="user-management"></app-sidebar>
 
-  <!-- Main Content -->
-  <div class="main-content" *ngIf="user">
-    <!-- Header with back button -->
-    <div class="details-header">
-      <a (click)="goBack()" class="back-button">
-        <i class="fas fa-arrow-left"></i> Back to User Management
-      </a>
+  <div class="main-content">
+    <!-- Debug information -->
+    <div style="background-color: #f8f9fa; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd;">
+      <p>Debug Info:</p>
+      <p>Route ID: {{userId || 'None'}}</p>
+      <p>Loading: {{loading}}</p>
+      <p>Error: {{error || 'None'}}</p>
+      <p>User Object: {{user ? 'Loaded' : 'Not Loaded'}}</p>
     </div>
-
-    <!-- User Profile Section -->
-    <div class="profile-section">
-      <div class="profile-card">
-        <div class="profile-header">
-          <div class="profile-left">
-            @if (user.photo) {
-              <img [src]="user.photo" alt="{{ user.name }}" class="profile-avatar">
-            } @else {
-              <div class="profile-initials">{{ getInitials(user.name || '') }}</div>
-            }
-            <h2>{{ user.name }}</h2>
-            <p class="user-id">#{{ user.employeeId }}</p>
-          </div>
-          
-          <div class="profile-details">
-            <div class="detail-item">
-              <h3>Email</h3>
-              <p>{{ user.email }}</p>
-            </div>
-            
-            <div class="detail-item">
-              <h3>Phone</h3>
-              <p>{{ user.phone || '+234 9013274980' }}</p>
-            </div>
-            
-            <div class="detail-item">
-              <h3>Join Date</h3>
-              <p>{{ user.joinDate || '2020-03-15' }}</p>
-            </div>
-            
-            <div class="detail-item">
-              <h3>Position</h3>
-              <p>{{ user.role }}</p>
-            </div>
-          </div>
-        </div>
-        <!-- Removed the last-active div -->
+    
+    <!-- Loading state -->
+    <div *ngIf="loading" style="padding: 20px;">
+      <p>Loading user details for ID: {{userId}}...</p>
+    </div>
+    
+    <!-- Error state -->
+    <div *ngIf="error && !loading" style="color: red; padding: 20px;">
+      <p>Error: {{error}}</p>
+      <button (click)="goBack()" class="btn btn-primary">Back to User Management</button>
+    </div>
+    
+    <!-- User data loaded successfully -->
+    <div *ngIf="user && !loading">
+      <div class="details-header">
+        <a (click)="goBack()" class="back-button">
+          <i class="fas fa-arrow-left"></i> Back to User Management
+        </a>
+        <h1>User Details</h1>
       </div>
-    </div>
 
-    <!-- Application Access Section -->
-    <div class="applications-section">
-      <div class="applications-table">
-        <!-- Move the header inside the applications-table container -->
-        <div class="section-header">
-          <div class="header-with-search">
-            <h2>Application Access</h2>
-            <div class="app-search-box">
-              <i class="fas fa-search search-icon"></i>
-              <input 
-                type="text" 
-                placeholder="Search applications..." 
-                [(ngModel)]="appSearchTerm"
-                (input)="filterApplications()"
-              >
-              <button class="clear-search" *ngIf="appSearchTerm" (click)="clearAppSearch()">
-                <i class="fas fa-times"></i>
-              </button>
+      <div class="profile-section">
+        <div class="profile-card">
+          <div class="profile-header">
+            <div class="profile-left">
+              <div class="profile-initials">{{ getInitials(user.name) }}</div>
+              <h2>{{user.name}}</h2>
+              <p class="user-id">{{user.id}}</p>
             </div>
-          </div>
-        </div>
-        
-        <div class="access-table">
-          <div class="access-header">
-            <div class="access-col application-col">Application</div>
-            <div class="access-col action-col">Action</div>
-          </div>
-          
-          <div class="table-body">
-            @if (filteredApplications && filteredApplications.length > 0) {
-              @for (app of filteredApplications; track app.id) {
-                <div class="access-row">
-                  <div class="access-col application-col">
-                    <div class="app-info">
-                      <div class="app-icon" [style.background-color]="app.iconBg">
-                        <i class="fas fa-{{ app.icon }}"></i>
-                      </div>
-                      <div class="app-details">
-                        <div class="app-name">{{ app.name }}</div>
-                        <div class="app-platform">{{ app.platform }}</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div class="access-col action-col">
-                    @if (app.status === 'Active') {
-                      <button class="revoke-btn" (click)="revokeAccess(app.id)">
-                        Revoke
-                      </button>
-                    } @else {
-                      <button class="grant-btn" (click)="grantAccess(app.id)">
-                        Grant Access
-                      </button>
-                    }
-                  </div>
-                </div>
-              }
-            } @else {
-              <div class="no-applications">
-                @if (appSearchTerm) {
-                  <p>No applications match your search.</p>
-                } @else {
-                  <p>No applications found for this user.</p>
-                }
+            
+            <div class="profile-details">
+              <div class="detail-item">
+                <h3>Email</h3>
+                <p>{{user.email}}</p>
               </div>
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Deactivation History Section -->
-    <div class="audit-section">
-      <div class="applications-table">
-        <div class="section-header">
-          <div class="header-with-filters">
-            <h2>Deactivation History</h2>
-            <div class="date-filter">
-              <label for="timeFilter">Filter by:</label>
-              <select id="timeFilter" [(ngModel)]="selectedTimeFilter" (change)="applyTimeFilter()">
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-                <option value="year">This Year</option>
-              </select>
+              <div class="detail-item">
+                <h3>Role</h3>
+                <p>{{user.role}}</p>
+              </div>
+              <div class="detail-item">
+                <h3>Department</h3>
+                <p>{{user.department}}</p>
+              </div>
+              <div class="detail-item">
+                <h3>Status</h3>
+                <p>{{user.status}}</p>
+              </div>
+              <div class="detail-item">
+                <h3>Last Active</h3>
+                <p>{{user.lastActive | date:'medium'}}</p>
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div class="scrollable-audit-logs">
-          <table class="audit-log-table">
-            <thead>
-              <tr>
-                <th>Date / Time</th>
-                <th>Employee</th>
-                <th>Application</th>
-                <th>Action type</th>
-                <th>Expiration Date</th>
-                <th>Reason</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let log of filteredLogs">
-                <td>{{ log.date | date:'dd MMM yyyy, HH:mm' }}</td>
-                <td class="employee-cell">
-                  <div class="employee-info">
-                    <div class="employee-name">{{ log.employee }}</div>
-                    <div class="employee-id">{{ log.employeeId }}</div>
-                  </div>
-                </td>
-                <td>{{ log.application }}</td>
-                <td>
-                  <span class="{{ log.actionType.toLowerCase() }}">{{ log.actionType }}</span>
-                </td>
-                <td>{{ log.expirationDate ? (log.expirationDate | date:'MMM dd, yyyy') : 'Not Applicable' }}</td>
-                <td>{{ log.reason }}</td>
-              </tr>
-              <tr *ngIf="filteredLogs.length === 0">
-                <td colspan="6" class="empty-state">No deactivation history found.</td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-<!-- Access Grant Modal -->
-<!-- <div class="modal-overlay" *ngIf="showAccessModal">
-  ...
-</div> -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { AuthService } from '../../core/services/auth.service';
 
 // Define interfaces for our application data
 export interface Application {
@@ -36,9 +37,26 @@ export class ApplicationStateService {
   private employeesSubject = new BehaviorSubject<Employee[]>([]);
   public employees$: Observable<Employee[]> = this.employeesSubject.asObservable();
   
-  constructor() {
+  constructor(private authService: AuthService) {
     // Load initial data from localStorage if available
     this.loadState();
+  }
+  
+  // Get the current officer name
+  getCurrentOfficerName(): string {
+    // Try to get the current user from localStorage or other auth mechanism
+    const currentUser = localStorage.getItem('currentUser');
+    if (currentUser) {
+      try {
+        const user = JSON.parse(currentUser);
+        return user.name || 'System User';
+      } catch (e) {
+        console.error('Error parsing current user:', e);
+      }
+    }
+    
+    // If no user is found, return a default name
+    return 'UAM Officer';
   }
   
   // Get all employees
@@ -95,6 +113,75 @@ export class ApplicationStateService {
     }
   }
   
+  // Add this method after updateApplicationStatus
+  deactivateApplication(
+    employeeId: string,
+    appId: string,
+    deactivationType: 'Temporary' | 'Permanent',
+    startDate?: string,
+    endDate?: string
+  ): void {
+    const employees = this.employeesSubject.value;
+    const employeeIndex = employees.findIndex(emp => emp.id === employeeId);
+    
+    if (employeeIndex !== -1 && employees[employeeIndex].applications) {
+      const appIndex = employees[employeeIndex].applications!.findIndex(app => app.id === appId);
+      
+      if (appIndex !== -1) {
+        employees[employeeIndex].applications![appIndex].status = 'Inactive';
+        employees[employeeIndex].applications![appIndex].deactivationType = deactivationType;
+        
+        this.employeesSubject.next([...employees]);
+        this.saveState();
+      }
+    }
+  }
+  
+  // Add this method to help with analytics
+  getDeactivationStats(): { temporary: number, permanent: number, total: number } {
+    const employees = this.employeesSubject.value;
+    let temporary = 0;
+    let permanent = 0;
+    
+    employees.forEach(employee => {
+      if (employee.applications) {
+        employee.applications.forEach(app => {
+          if (app.status === 'Inactive') {
+            if (app.deactivationType === 'Temporary') {
+              temporary++;
+            } else if (app.deactivationType === 'Permanent') {
+              permanent++;
+            }
+          }
+        });
+      }
+    });
+    
+    return {
+      temporary,
+      permanent,
+      total: temporary + permanent
+    };
+  }
+
+  // Add this method to activate applications
+  activateApplication(employeeId: string, appId: string): void {
+    const employees = this.employeesSubject.value;
+    const employeeIndex = employees.findIndex(emp => emp.id === employeeId);
+    
+    if (employeeIndex !== -1 && employees[employeeIndex].applications) {
+      const appIndex = employees[employeeIndex].applications!.findIndex(app => app.id === appId);
+      
+      if (appIndex !== -1) {
+        employees[employeeIndex].applications![appIndex].status = 'Active';
+        employees[employeeIndex].applications![appIndex].deactivationType = undefined;
+        
+        this.employeesSubject.next([...employees]);
+        this.saveState();
+      }
+    }
+  }
+  
   // Save state to localStorage
   private saveState(): void {
     localStorage.setItem('appState', JSON.stringify({
@@ -117,6 +204,12 @@ export class ApplicationStateService {
     }
   }
 }
+
+
+
+
+
+
 
 
 

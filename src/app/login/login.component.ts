@@ -1,23 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../core/services/auth.service';
-
-interface LoginCredentials {
-  employeeId: string;
-  password: string;
-}
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
+  encapsulation: ViewEncapsulation.None
 })
 export class LoginComponent {
-  employeeId: string = '';
+  email: string = '';
   password: string = '';
   isLoading: boolean = false;
   errorMessage: string = '';
@@ -32,8 +28,8 @@ export class LoginComponent {
     this.isLoading = true;
     this.errorMessage = '';
     
-    const credentials: LoginCredentials = {
-      employeeId: this.employeeId,
+    const credentials = {
+      email: this.email,
       password: this.password
     };
     
@@ -42,7 +38,6 @@ export class LoginComponent {
         this.isLoading = false;
         console.log('Login successful:', response);
         
-        // Get return url from route parameters or default to '/'
         const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
         this.router.navigateByUrl(returnUrl);
       },
@@ -51,7 +46,7 @@ export class LoginComponent {
         console.error('Login failed:', error);
         
         if (error.status === 401) {
-          this.errorMessage = 'Invalid employee ID or password';
+          this.errorMessage = 'Invalid email or password';
         } else {
           this.errorMessage = 'An error occurred. Please try again later.';
         }
@@ -59,5 +54,7 @@ export class LoginComponent {
     });
   }
 }
+
+
 
 

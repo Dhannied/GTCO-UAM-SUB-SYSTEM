@@ -11,4 +11,5 @@ export declare class UsersService {
     create(createUserDto: CreateUserDto): Promise<User>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<User>;
     remove(id: string): Promise<void>;
+    generateMockEmployees(count?: number): Promise<User[]>;
 }

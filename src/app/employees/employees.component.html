@@ -187,7 +187,7 @@
         <h3>Selected Employees ({{ getSelectedEmployeesCount() }})</h3>
         <div class="selected-employees-list" *ngIf="getSelectedEmployeesCount() <= 5">
           <div *ngFor="let employee of getSelectedEmployees()" class="selected-employee">
-            {{ employee.name }} ({{ employee.id }})
+            {{ employee.name }} ({{ employee.employeeId }})
           </div>
         </div>
         <div class="selected-employees-count" *ngIf="getSelectedEmployeesCount() > 5">
@@ -198,7 +198,7 @@
         </div>
         <div class="all-selected-employees" *ngIf="viewAllSelectedEmployees && getSelectedEmployeesCount() > 5">
           <div *ngFor="let employee of getSelectedEmployees()" class="selected-employee">
-            {{ employee.name }} ({{ employee.id }})
+            {{ employee.name }} ({{ employee.employeeId }})
           </div>
         </div>
       </div>
@@ -216,6 +216,7 @@
     </div>
   </div>
 </div>
+
 
 
 

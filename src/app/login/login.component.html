@@ -49,19 +49,19 @@
       
       <form (ngSubmit)="login()" #loginForm="ngForm">
         <div class="form-group">
-          <label for="employeeId">Employee ID</label>
+          <label for="email">Email</label>
           <input 
-            type="text" 
-            id="employeeId" 
-            name="employeeId"
-            [(ngModel)]="employeeId"
-            #employeeIdInput="ngModel"
-            placeholder="Enter your employee ID" 
+            type="email" 
+            id="email" 
+            name="email"
+            [(ngModel)]="email"
+            #emailInput="ngModel"
+            placeholder="Enter your email" 
             required
-            minlength="5">
-          <div *ngIf="employeeIdInput.invalid && (employeeIdInput.dirty || employeeIdInput.touched)" class="error-message">
-            <div *ngIf="employeeIdInput.errors?.['required']">Employee ID is required</div>
-            <div *ngIf="employeeIdInput.errors?.['minlength']">Employee ID must be at least 5 characters</div>
+            email>
+          <div *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)" class="error-message">
+            <div *ngIf="emailInput.errors?.['required']">Email is required</div>
+            <div *ngIf="emailInput.errors?.['email']">Please enter a valid email</div>
           </div>
         </div>
         
@@ -99,4 +99,5 @@
     </div>
   </div>
 </div>
+
 

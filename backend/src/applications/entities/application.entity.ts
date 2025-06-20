@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { UamUser } from '../../uam-users/entities/uam-user.entity';
 
 @Entity()
 export class Application {
@@ -30,8 +31,11 @@ export class Application {
   @Column({ nullable: true })
   deactivationType: string;
 
-  @ManyToOne(() => User, user => user.applications)
+  @ManyToOne(() => User, user => user.applications, { nullable: true })
   user: User;
+
+  @ManyToOne(() => UamUser, uamUser => uamUser.applications, { nullable: true })
+  uamUser: UamUser;
 
   @CreateDateColumn()
   createdAt: Date;

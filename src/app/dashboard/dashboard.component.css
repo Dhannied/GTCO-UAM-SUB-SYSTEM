@@ -243,11 +243,23 @@
 
 .user-name {
   color: #e84d1c;
+  font-weight: 500;
 }
 
 .user-info {
   color: #666;
-  margin: 5px 0 0;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.user-role {
+  font-weight: 500;
+  color: #555;
+}
+
+.last-login {
+  font-weight: 500;
+  color: #555;
 }
 
 .filters {
@@ -1036,6 +1048,7 @@
 .apply-btn:hover {
   background-color: #c04504;
 }
+
 
 
 

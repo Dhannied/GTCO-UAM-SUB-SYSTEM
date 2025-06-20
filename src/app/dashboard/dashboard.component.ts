@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,37 +6,41 @@ import { SidebarComponent } from '../shared/sidebar/sidebar.component';
 import { AuditLogTableComponent } from '../shared/audit-log-table/audit-log-table.component';
 import { AuditLog } from '../shared/models/audit-log.model';
 import { AuditLogService } from '../shared/services/audit-log.service';
+import { AuthService } from '../core/services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, SidebarComponent, AuditLogTableComponent],
   templateUrl: './dashboard.component.html',
+  encapsulation: ViewEncapsulation.None,
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
-  userName = 'John Doe';
-  userRole = 'UAM Supervisor';
-  lastLogin = '20/03/2025';
+  // User information
+  userName = '';
+  userRole = '';
+  lastLogin = '';
   
+  // Statistics
   totalDeactivations = 0;
   temporaryDeactivations = 0;
   permanentDeactivations = 0;
-  activeUsers = 1450;
+  activeUsers = 0;
   totalReactivations = 0;
   
   // Filter states
-  selectedTimeRange: string = 'all'; // Changed from 'This Month' to 'all'
+  selectedTimeRange: string = 'all';
   selectedApplication: string = 'Applications';
   
-  // Add properties for date range
+  // Date range
   startDate: string = '';
   endDate: string = '';
   showDateRangeDialog: boolean = false;
   tempStartDate: string = '';
   tempEndDate: string = '';
 
-  // Holds all audit logs fetched from the service
+  // Audit logs
   private rawAuditLogs: AuditLog[] = [];
   
   // Filtered data
@@ -45,11 +49,22 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   constructor(
     private router: Router,
-    private auditLogService: AuditLogService
+    private auditLogService: AuditLogService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.loadUserInfo();
     this.loadAuditLogData();
+    
+    // Set default date range if needed
+    const today = new Date();
+    this.endDate = today.toISOString().split('T')[0];
+    
+    // Set start date to 30 days ago by default
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    this.startDate = thirtyDaysAgo.toISOString().split('T')[0];
   }
 
   ngAfterViewInit(): void {
@@ -59,20 +74,58 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     }, 100);
   }
 
-  // Load initial data or refresh data
+  // Load user information from auth service
+  loadUserInfo(): void {
+    const currentUser = this.authService.currentUser;
+    console.log('Current user from auth service:', currentUser);
+    
+    if (currentUser) {
+      this.userName = currentUser.name || 'User';
+      this.userRole = currentUser.role || 'User';
+      
+      // Format last login date if available
+      if (currentUser.lastActive) {
+        const lastLoginDate = new Date(currentUser.lastActive);
+        this.lastLogin = lastLoginDate.toLocaleDateString() + ' at ' + 
+          lastLoginDate.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true 
+          });
+      } else {
+        // If lastActive is not available, show a message indicating this is the first login
+        this.lastLogin = 'First login';
+      }
+    } else {
+      console.warn('No user data available');
+      // Set default values if user data is not available
+      this.userName = 'Guest';
+      this.userRole = 'Viewer';
+      this.lastLogin = 'Not available';
+    }
+  }
+
+  // Load audit log data
   loadAuditLogData(): void {
-    this.auditLogService.getAllLogs().subscribe(logs => {
-      console.log('Raw audit logs:', logs);
-      this.rawAuditLogs = logs;
-      this.applyFilters();
-      // Debug: log filtered logs and metrics
-      console.log('Filtered logs:', this.recentActivities);
-      console.log('Metrics:', {
-        totalDeactivations: this.totalDeactivations,
-        temporaryDeactivations: this.temporaryDeactivations,
-        permanentDeactivations: this.permanentDeactivations,
-        totalReactivations: this.totalReactivations
-      });
+    console.log('Loading audit log data...');
+    this.auditLogService.getAllLogs().subscribe({
+      next: (logs) => {
+        console.log('Raw audit logs received:', logs);
+        this.rawAuditLogs = logs;
+        this.applyFilters();
+        
+        // Set active users count (this could come from a different service)
+        this.activeUsers = 1450; // This is a placeholder, replace with real data
+      },
+      error: (error) => {
+        console.error('Error loading audit logs:', error);
+        // Handle error - maybe show a notification to the user
+        this.rawAuditLogs = [];
+        this.recentActivities = [];
+      },
+      complete: () => {
+        console.log('Audit log loading complete');
+      }
     });
   }
 
@@ -169,103 +222,47 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     console.log('Top deactivated apps after filters:', this.topDeactivatedApps);
   }
 
-  logout(): void {
-    // Perform any logout logic here (clear tokens, etc.)
-    this.router.navigate(['/login']);
-  }
-
-  // Calculate the percentage width for app bars
-  getAppBarPercentage(app: { name: string, count: number }): number {
-    // Find the maximum count among the currently displayed apps
-    const maxCount = Math.max(...this.topDeactivatedApps.map(a => a.count), 1);
-    
-    // Calculate percentage based on the maximum count in the current view
-    return (app.count / maxCount) * 100;
-  }
-
-  // Method to handle date range change
+  // Handle date range change
   onDateRangeChange(): void {
     if (this.selectedTimeRange === 'custom') {
-      // Show the date range dialog
       this.showDateRangeDialog = true;
-      
       // Initialize with current values or defaults
-      if (!this.startDate || !this.endDate) {
-        const today = new Date();
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(today.getDate() - 30);
-        
-        this.tempStartDate = this.formatDateForInput(thirtyDaysAgo);
-        this.tempEndDate = this.formatDateForInput(today);
-      } else {
-        this.tempStartDate = this.startDate;
-        this.tempEndDate = this.endDate;
-      }
+      this.tempStartDate = this.startDate || '';
+      this.tempEndDate = this.endDate || '';
     } else {
-      // Apply the selected preset directly
       this.applyFilters();
     }
   }
 
-  // Method to cancel the date range dialog
-  cancelDateRangeDialog(): void {
-    this.showDateRangeDialog = false;
-    
-    // If we were previously using a different preset, revert to it
-    if (this.selectedTimeRange === 'custom' && !this.startDate) {
-      this.selectedTimeRange = 'This Month'; // Default to "This Month" if no custom range was previously set
-    }
-  }
-
-  // Method to apply the selected date range
-  applyDateRange(): void {
+  // Apply custom date range
+  applyCustomDateRange(): void {
     this.startDate = this.tempStartDate;
     this.endDate = this.tempEndDate;
     this.showDateRangeDialog = false;
-    
-    // Set the selectedTimeRange to 'custom' to indicate we're using a custom range
-    this.selectedTimeRange = 'custom';
-    
-    // Apply filters with the new date range
     this.applyFilters();
   }
 
-  // Helper method to format a date for the date input field
-  private formatDateForInput(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+  // Cancel custom date range
+  cancelCustomDateRange(): void {
+    this.showDateRangeDialog = false;
+    // If no dates were previously set, revert to 'all'
+    if (!this.startDate && !this.endDate) {
+      this.selectedTimeRange = 'all';
+    }
+  }
+
+  // Log out user
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  // Calculate percentage for app bars
+  getAppBarPercentage(app: { name: string, count: number }): number {
+    const maxCount = Math.max(...this.topDeactivatedApps.map(a => a.count), 1);
+    return (app.count / maxCount) * 100;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

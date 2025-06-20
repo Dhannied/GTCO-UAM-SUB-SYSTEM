@@ -5,12 +5,11 @@ export interface AuditLog {
   employeeId: string;
   application: string;
   actionType: string;
-  duration?: string;
   reason: string;
   officer: string;
+  duration?: string;
   expirationDate?: string;
+  department?: string;
 }
-
-
 
 

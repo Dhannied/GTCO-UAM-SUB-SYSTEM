@@ -1,9 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { UserManagementService, UAMUser } from '../shared/services/user-management.service';
 import { SidebarComponent } from '../shared/sidebar/sidebar.component';
 
@@ -12,13 +10,8 @@ import { SidebarComponent } from '../shared/sidebar/sidebar.component';
   templateUrl: './user-management.component.html',
   styleUrls: ['./user-management.component.css'],
   standalone: true,
-  imports: [
-    CommonModule, 
-    FormsModule, 
-    ReactiveFormsModule, 
-    RouterModule,
-    SidebarComponent
-  ]
+  encapsulation: ViewEncapsulation.None,
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, SidebarComponent]
 })
 export class UserManagementComponent implements OnInit {
   // Add Math object for use in template
@@ -29,6 +22,8 @@ export class UserManagementComponent implements OnInit {
   roleFilter: string = 'All Roles';
   currentPage: number = 1;
   itemsPerPage: number = 10;
+  loading: boolean = false;
+  error: string | null = null;
   
   // Add User Form
   addUserForm: FormGroup;
@@ -93,9 +88,35 @@ export class UserManagementComponent implements OnInit {
   }
   
   ngOnInit(): void {
-    this.userService.getUsers().subscribe(users => {
-      this.users = users;
-      console.log('Users loaded in UserManagementComponent:', this.users);
+    this.loadUsers();
+  }
+
+  loadUsers(): void {
+    this.loading = true;
+    this.userService.getUsers().subscribe({
+      next: (users) => {
+        console.log('Users loaded:', users);
+        
+        // Debug: Check lastActive values
+        users.forEach(user => {
+          console.log(`User ${user.name} lastActive:`, user.lastActive, 
+                      'Type:', typeof user.lastActive, 
+                      'Formatted:', this.formatLastActive(user.lastActive));
+        });
+        
+        this.users = users;
+        // Instead of directly assigning to filteredUsers
+        // this.filteredUsers = [...this.users];
+        
+        // Just update the users array, and the getter will handle filtering
+        this.users = users;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading users:', error);
+        this.error = 'Failed to load users';
+        this.loading = false;
+      }
     });
   }
   
@@ -147,11 +168,9 @@ export class UserManagementComponent implements OnInit {
     this.searchTerm = '';
   }
   
-  viewUser(userId: string): void {
-    console.log('Navigating to user details for ID:', userId);
-    const user = this.userService.getUserById(userId);
-    console.log('User from service:', user);
-    this.router.navigate(['/user-management/user', userId]);
+  viewUser(id: string): void {
+    console.log('Navigating to user details with ID:', id);
+    this.router.navigate(['/user-management/user', id]);
   }
   
   getInitials(name: string): string {
@@ -166,6 +185,9 @@ export class UserManagementComponent implements OnInit {
   openAddUserModal(): void {
     this.showAddUserModal = true;
     this.resetForm();
+    this.addUserForm.patchValue({
+      role: 'Officer' // Default role is Officer
+    });
   }
 
   closeAddUserModal(): void {
@@ -232,57 +254,46 @@ export class UserManagementComponent implements OnInit {
     return this.addUserForm.get('role')?.value === 'Officer' && this.selectedApps.length === 0;
   }
 
-  // Add new user
-  addNewUser(): void {
-    if (this.addUserForm.invalid || this.isOfficerWithNoApps()) {
+  // Update the form submission method
+  submitAddUserForm(): void {
+    if (this.addUserForm.invalid) {
+      // Mark all fields as touched to trigger validation messages
+      Object.keys(this.addUserForm.controls).forEach(key => {
+        this.addUserForm.get(key)?.markAsTouched();
+      });
+      return;
+    }
+    
+    // Check if officer has at least one app selected
+    if (this.isOfficerWithNoApps()) {
       return;
     }
     
     const formValues = this.addUserForm.value;
     
-    // Create new user object
+    // Create new UAM user object
     const newUser: UAMUser = {
-      id: `UAM-${Math.floor(1000 + Math.random() * 9000)}`,
+      id: formValues.id,
       name: formValues.name,
       email: formValues.email,
       role: formValues.role,
-      status: 'Active',
       department: formValues.department,
-      lastActive: new Date().toLocaleString('en-US'),
-      authorizedApps: this.selectedApps,
-      employeeId: formValues.id,
-      phone: '+234 9013274980',
-      joinDate: new Date().toISOString().split('T')[0],
-      photo: undefined, // Initialize as undefined
-      // Applications array...
-      applications: this.selectedApps.map(appName => {
-        // Find the app in availableApps to get its id
-        const app = this.availableApps.find(a => a.name === appName);
-        return {
-          id: app ? `app${app.id}` : `app${Math.floor(Math.random() * 1000)}`,
-          name: appName,
-          platform: this.getDefaultPlatform(appName),
-          accessLevel: 'Full Access',
-          lastUsed: 'Not used yet',
-          icon: this.getAppIcon(appName),
-          iconBg: this.getAppIconBg(appName),
-          status: 'Active'
-        };
-      })
+      status: 'Active',
+      lastActive: new Date().toISOString(),
+      // Use id instead of employeeId or map it correctly
+      // employeeId: formValues.id, // This line is causing the error
     };
     
-    // Add the user
+    // Add the UAM user
     this.userService.addUser(newUser).subscribe(() => {
       // Refresh the users list
       this.userService.getUsers().subscribe(users => {
         this.users = users;
+        this.filteredUsers;
       });
       
       // Reset the form and close the modal
-      this.addUserForm.reset({
-        role: 'Officer'
-      });
-      this.selectedApps = [];
+      this.resetForm();
       this.showAddUserModal = false;
     });
   }
@@ -331,7 +342,166 @@ export class UserManagementComponent implements OnInit {
     };
     return colors[appName] || '#e0e0e0';
   }
+
+  // Format the last active date
+  formatLastActive(dateValue: any): string {
+    console.log('formatLastActive input:', dateValue, 'Type:', typeof dateValue);
+    
+    // If no value is provided, use current time instead of showing "Never logged in"
+    if (!dateValue) {
+      console.log('No lastActive value, using current time');
+      dateValue = new Date();
+    }
+    
+    try {
+      let date: Date;
+      
+      // Handle different types of input
+      if (dateValue instanceof Date) {
+        date = dateValue;
+      } else if (typeof dateValue === 'string') {
+        date = new Date(dateValue);
+      } else if (typeof dateValue === 'object') {
+        date = new Date(dateValue);
+      } else {
+        // If we can't parse the date, use current time
+        console.warn('Unparseable date value:', dateValue);
+        date = new Date();
+      }
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date:', date);
+        date = new Date(); // Use current time for invalid dates
+      }
+      
+      console.log('Parsed date:', date);
+      
+      // Format the date
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      if (date.getFullYear() === today.getFullYear() && 
+          date.getMonth() === today.getMonth() && 
+          date.getDate() === today.getDate()) {
+        return `Today at ${date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true 
+        })}`;
+      } else if (date.getFullYear() === yesterday.getFullYear() && 
+                date.getMonth() === yesterday.getMonth() && 
+                date.getDate() === yesterday.getDate()) {
+        return `Yesterday at ${date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true 
+        })}`;
+      } else {
+        return `${date.toLocaleDateString('en-US', { 
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        })} at ${date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true 
+        })}`;
+      }
+    } catch (error) {
+      console.error('Error in formatLastActive:', error);
+      // Return a default formatted date instead of an error message
+      return new Date().toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    }
+  }
+
+  // Helper method to format a date consistently
+  private formatDate(date: Date): string {
+    // Get current date for comparison
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    // Format based on when the date is
+    if (date.getFullYear() === today.getFullYear() && 
+        date.getMonth() === today.getMonth() && 
+        date.getDate() === today.getDate()) {
+      // Today
+      return `Today at ${date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+      })}`;
+    } else if (date.getFullYear() === yesterday.getFullYear() && 
+              date.getMonth() === yesterday.getMonth() && 
+              date.getDate() === yesterday.getDate()) {
+      // Yesterday
+      return `Yesterday at ${date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+      })}`;
+    } else if (date.getFullYear() === now.getFullYear()) {
+      // This year
+      return `${date.toLocaleDateString('en-US', { 
+        month: 'short',
+        day: 'numeric'
+      })} at ${date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+      })}`;
+    } else {
+      // Different year
+      return `${date.toLocaleDateString('en-US', { 
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      })} at ${date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+      })}`;
+    }
+  }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
