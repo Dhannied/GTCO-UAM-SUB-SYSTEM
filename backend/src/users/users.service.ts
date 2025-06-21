@@ -69,7 +69,7 @@ export class UsersService {
 
   async generateMockEmployees(count: number = 20): Promise<User[]> {
     try {
-      console.log(`Starting to generate ${count} mock employees`);
+      console.log(`Starting to generate ${count} mock employees with Nigerian names`);
       const mockUsers: User[] = [];
       
       // Sample departments
@@ -92,18 +92,18 @@ export class UsersService {
         'Development': ['Software Engineer', 'Product Manager', 'UX Designer', 'QA Engineer', 'DevOps Engineer']
       };
       
-      // Sample first names
+      // Nigerian first names
       const firstNames = [
-        'John', 'Jane', 'Michael', 'Emily', 'David', 'Sarah', 'Robert', 'Jennifer', 
-        'William', 'Elizabeth', 'James', 'Linda', 'Richard', 'Patricia', 'Thomas', 
-        'Barbara', 'Charles', 'Mary', 'Daniel', 'Susan'
+        'Adebayo', 'Chioma', 'Oluwaseun', 'Ngozi', 'Emeka', 'Folake', 'Chinedu', 'Yewande', 
+        'Olumide', 'Amara', 'Tunde', 'Nneka', 'Obinna', 'Aisha', 'Segun', 'Zainab', 'Chidi', 
+        'Funmilayo', 'Ikenna', 'Blessing'
       ];
       
-      // Sample last names
+      // Nigerian last names
       const lastNames = [
-        'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Garcia', 
-        'Rodriguez', 'Wilson', 'Martinez', 'Anderson', 'Taylor', 'Thomas', 'Hernandez', 
-        'Moore', 'Martin', 'Jackson', 'Thompson', 'White'
+        'Okafor', 'Adeyemi', 'Nwachukwu', 'Ojo', 'Okonkwo', 'Afolayan', 'Eze', 'Adebisi', 
+        'Nnamdi', 'Olawale', 'Igwe', 'Balogun', 'Uche', 'Adesina', 'Okoli', 'Ogunleye', 
+        'Chukwu', 'Adeleke', 'Njoku', 'Ibrahim'
       ];
       
       // Sample applications
@@ -112,7 +112,7 @@ export class UsersService {
         'Active Directory', 'Email', 'VPN', 'CRM', 'ERP'
       ];
       
-      console.log('Generating users...');
+      console.log('Generating users with Nigerian names...');
       
       // Generate random users
       for (let i = 0; i < count; i++) {
@@ -122,7 +122,7 @@ export class UsersService {
         
         // Add timestamp to ensure email uniqueness
         const timestamp = Date.now() + i;
-        const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${timestamp}@example.com`;
+        const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${timestamp}@gtbank.com`;
         
         const department = departments[Math.floor(Math.random() * departments.length)];
         const position = positions[department][Math.floor(Math.random() * positions[department].length)];
@@ -166,7 +166,7 @@ export class UsersService {
         mockUsers.push(savedUser);
       }
       
-      console.log(`Successfully generated ${mockUsers.length} mock employees`);
+      console.log(`Successfully generated ${mockUsers.length} mock employees with Nigerian names`);
       return mockUsers;
     } catch (error) {
       console.error('Error generating mock employees:', error);
@@ -174,6 +174,7 @@ export class UsersService {
     }
   }
 }
+
 
 
 

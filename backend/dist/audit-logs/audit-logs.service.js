@@ -69,7 +69,7 @@ let AuditLogsService = class AuditLogsService {
             'Employee returned from leave', 'Role restored', 'Access requirement',
             'Issue resolved', 'Security clearance granted'
         ];
-        const officers = ['Admin User', 'Security Officer', 'IT Manager', 'HR Manager'];
+        const officers = ['Adebayo Okonkwo', 'Chioma Eze', 'Oluwaseun Adeyemi', 'Emeka Nwachukwu', 'Folake Balogun'];
         const mockLogs = [];
         for (let i = 0; i < count; i++) {
             const date = new Date();

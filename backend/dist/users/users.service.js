@@ -65,7 +65,7 @@ let UsersService = class UsersService {
     }
     async generateMockEmployees(count = 20) {
         try {
-            console.log(`Starting to generate ${count} mock employees`);
+            console.log(`Starting to generate ${count} mock employees with Nigerian names`);
             const mockUsers = [];
             const departments = [
                 'IT', 'Finance', 'HR', 'Marketing', 'Operations',
@@ -84,26 +84,26 @@ let UsersService = class UsersService {
                 'Development': ['Software Engineer', 'Product Manager', 'UX Designer', 'QA Engineer', 'DevOps Engineer']
             };
             const firstNames = [
-                'John', 'Jane', 'Michael', 'Emily', 'David', 'Sarah', 'Robert', 'Jennifer',
-                'William', 'Elizabeth', 'James', 'Linda', 'Richard', 'Patricia', 'Thomas',
-                'Barbara', 'Charles', 'Mary', 'Daniel', 'Susan'
+                'Adebayo', 'Chioma', 'Oluwaseun', 'Ngozi', 'Emeka', 'Folake', 'Chinedu', 'Yewande',
+                'Olumide', 'Amara', 'Tunde', 'Nneka', 'Obinna', 'Aisha', 'Segun', 'Zainab', 'Chidi',
+                'Funmilayo', 'Ikenna', 'Blessing'
             ];
             const lastNames = [
-                'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Garcia',
-                'Rodriguez', 'Wilson', 'Martinez', 'Anderson', 'Taylor', 'Thomas', 'Hernandez',
-                'Moore', 'Martin', 'Jackson', 'Thompson', 'White'
+                'Okafor', 'Adeyemi', 'Nwachukwu', 'Ojo', 'Okonkwo', 'Afolayan', 'Eze', 'Adebisi',
+                'Nnamdi', 'Olawale', 'Igwe', 'Balogun', 'Uche', 'Adesina', 'Okoli', 'Ogunleye',
+                'Chukwu', 'Adeleke', 'Njoku', 'Ibrahim'
             ];
             const applications = [
                 'Core Banking', 'Finnacle', 'Gap', 'E-Document Manager',
                 'Active Directory', 'Email', 'VPN', 'CRM', 'ERP'
             ];
-            console.log('Generating users...');
+            console.log('Generating users with Nigerian names...');
             for (let i = 0; i < count; i++) {
                 const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
                 const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
                 const name = `${firstName} ${lastName}`;
                 const timestamp = Date.now() + i;
-                const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${timestamp}@example.com`;
+                const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${timestamp}@gtbank.com`;
                 const department = departments[Math.floor(Math.random() * departments.length)];
                 const position = positions[department][Math.floor(Math.random() * positions[department].length)];
                 console.log(`Creating user ${i + 1}/${count}: ${name}`);
@@ -134,7 +134,7 @@ let UsersService = class UsersService {
                 await this.usersRepository.save(savedUser);
                 mockUsers.push(savedUser);
             }
-            console.log(`Successfully generated ${mockUsers.length} mock employees`);
+            console.log(`Successfully generated ${mockUsers.length} mock employees with Nigerian names`);
             return mockUsers;
         }
         catch (error) {

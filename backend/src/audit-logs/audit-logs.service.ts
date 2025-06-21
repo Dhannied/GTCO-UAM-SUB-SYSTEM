@@ -73,8 +73,8 @@ export class AuditLogsService {
       'Issue resolved', 'Security clearance granted'
     ];
     
-    // Sample officers
-    const officers = ['Admin User', 'Security Officer', 'IT Manager', 'HR Manager'];
+    // Nigerian officers
+    const officers = ['Adebayo Okonkwo', 'Chioma Eze', 'Oluwaseun Adeyemi', 'Emeka Nwachukwu', 'Folake Balogun'];
     
     // Generate random audit logs
     const mockLogs: AuditLog[] = [];
@@ -126,4 +126,5 @@ export class AuditLogsService {
     return mockLogs;
   }
 }
+
 

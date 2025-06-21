@@ -15,30 +15,16 @@ export class UamUsersService {
 
   async findAll(): Promise<UamUser[]> {
     console.log('Finding all UAM users');
-    
-    const users = await this.uamUsersRepository.find({ 
+
+    // The `select` option was removed because it prevents relations from being included in the result.
+    // By removing it, all fields from the entity, including the 'applications' relation, will be returned.
+    // For security, ensure the password field in the UamUser entity is marked with `{ select: false }` to prevent it from being exposed.
+    const users = await this.uamUsersRepository.find({
       relations: ['applications'],
-      select: ['id', 'name', 'email', 'role', 'status', 'department', 'lastActive', 'employeeId', 'photo']
     });
-    
+
     console.log(`Found ${users.length} users`);
-    
-    // Debug: Check lastActive values
-    users.forEach(user => {
-      console.log(`User ${user.name} lastActive:`, user.lastActive);
-      
-      // If no lastActive, set it to current time
-      if (!user.lastActive) {
-        console.log(`Setting lastActive for ${user.name}`);
-        user.lastActive = new Date();
-        
-        // Update the database
-        this.uamUsersRepository.update(user.id, { lastActive: user.lastActive })
-          .then(() => console.log(`Updated lastActive for ${user.name}`))
-          .catch(error => console.error(`Error updating lastActive for ${user.name}:`, error));
-      }
-    });
-    
+
     return users;
   }
 
@@ -186,11 +172,3 @@ export class UamUsersService {
     }
   }
 }
-
-
-
-
-
-
-
-

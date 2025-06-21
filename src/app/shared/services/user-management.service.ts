@@ -31,26 +31,7 @@ export class UserManagementService {
     console.log('Fetching users from:', this.apiUrl);
     
     return this.http.get<UAMUser[]>(`${this.apiUrl}`).pipe(
-      tap(users => {
-        console.log('Raw users from API:', users);
-        
-        // Debug: Check each user's lastActive
-        users.forEach(user => {
-          console.log(`User ${user.name} lastActive:`, user.lastActive, 'Type:', typeof user.lastActive);
-          
-          // Ensure lastActive is a string if it exists
-          if (user.lastActive) {
-            if (typeof user.lastActive === 'object') {
-              user.lastActive = new Date(user.lastActive).toISOString();
-              console.log(`Converted lastActive for ${user.name}:`, user.lastActive);
-            }
-          } else {
-            console.log(`No lastActive for ${user.name}, using current time`);
-            // If no lastActive, set it to current time
-            user.lastActive = new Date().toISOString();
-          }
-        });
-      }),
+      tap(users => console.log('Users from API:', users)),
       catchError(error => {
         console.error('Error fetching users:', error);
         // Return mock data if API fails
@@ -151,8 +132,8 @@ export class UserManagementService {
     return [
       {
         id: 'user-1',
-        name: 'John Smith',
-        email: 'john.smith@example.com',
+        name: 'Adebayo Okafor',
+        email: 'adebayo.okafor@gtbank.com',
         role: 'Supervisor',
         department: 'IT',
         status: 'Active',
@@ -160,8 +141,8 @@ export class UserManagementService {
       },
       {
         id: 'user-2',
-        name: 'Sarah Johnson',
-        email: 'sarah.johnson@example.com',
+        name: 'Chioma Adeyemi',
+        email: 'chioma.adeyemi@gtbank.com',
         role: 'Officer',
         department: 'Security',
         status: 'Active',
@@ -169,8 +150,8 @@ export class UserManagementService {
       },
       {
         id: 'user-3',
-        name: 'Michael Brown',
-        email: 'michael.brown@example.com',
+        name: 'Oluwaseun Nwachukwu',
+        email: 'oluwaseun.nwachukwu@gtbank.com',
         role: 'Officer',
         department: 'Operations',
         status: 'Inactive',
@@ -178,8 +159,8 @@ export class UserManagementService {
       },
       {
         id: 'user-4',
-        name: 'Emily Davis',
-        email: 'emily.davis@example.com',
+        name: 'Ngozi Ojo',
+        email: 'ngozi.ojo@gtbank.com',
         role: 'Supervisor',
         department: 'Finance',
         status: 'Active',
@@ -187,8 +168,8 @@ export class UserManagementService {
       },
       {
         id: 'user-5',
-        name: 'Robert Wilson',
-        email: 'robert.wilson@example.com',
+        name: 'Emeka Okonkwo',
+        email: 'emeka.okonkwo@gtbank.com',
         role: 'Officer',
         department: 'Security',
         status: 'Active',
@@ -197,33 +178,3 @@ export class UserManagementService {
     ];
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

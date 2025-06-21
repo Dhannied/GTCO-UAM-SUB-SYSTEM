@@ -530,13 +530,32 @@ export class EmployeesComponent implements OnInit {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return `${diffDays} days`;
   }
+
+  // Generate mock data for testing
+  generateMockData(): void {
+    console.log('Generating Nigerian mock data...');
+    
+    // Call the service method to generate mock employees
+    this.employeesService.generateMockEmployees(20).subscribe(
+      (employees) => {
+        console.log(`Successfully generated ${employees.length} Nigerian mock employees`);
+        
+        // Update the component's employees array
+        this.employees = employees;
+        this.filteredEmployees = [...this.employees];
+        this.currentPage = 1;
+        this.updatePagination();
+        
+        // Show success message
+        alert(`Successfully generated ${employees.length} Nigerian mock employees`);
+      },
+      (error) => {
+        console.error('Failed to generate mock employees:', error);
+        alert('Failed to generate mock data. See console for details.');
+      }
+    );
+  }
 }
-
-
-
-
-
-
 
 
 

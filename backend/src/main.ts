@@ -8,18 +8,18 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   
-  // Enable CORS for Angular frontend
+  // ✅ Enable CORS once
   app.enableCors({
-    origin: '*',
+    origin: '*', // or explicitly put your frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
-  
-  // Enable validation
+
+  // ✅ Global validation
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   
-  // Setup Swagger documentation
+  // ✅ Swagger
   const config = new DocumentBuilder()
     .setTitle('UAM Centralized Deactivation System API')
     .setDescription('API documentation for UAM Centralized Deactivation System')
@@ -29,6 +29,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
   
+  // ✅ Start server
   const port = configService.get('PORT', 3000);
   await app.listen(port);
   console.log(`Application is running on: ${await app.getUrl()}`);
