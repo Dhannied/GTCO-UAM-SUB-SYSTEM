@@ -9,7 +9,7 @@ async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     const configService = app.get(config_1.ConfigService);
     app.enableCors({
-        origin: configService.get('FRONTEND_URL', 'http://localhost:4200'),
+        origin: '*',
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
         credentials: true,
     });
