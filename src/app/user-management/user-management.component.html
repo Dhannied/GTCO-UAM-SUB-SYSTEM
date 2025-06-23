@@ -11,21 +11,17 @@
         <i class="fas fa-plus"></i> Add UAM Officer
       </button>
     </div>
-    
+
     <!-- Search and Filters -->
     <div class="search-filters">
       <div class="search-box">
         <i class="fas fa-search search-icon"></i>
-        <input 
-          type="text" 
-          placeholder="Search UAM officers..." 
-          [(ngModel)]="searchTerm" name="searchTerm"
-        >
+        <input type="text" placeholder="Search UAM officers..." [(ngModel)]="searchTerm" name="searchTerm">
         <button *ngIf="searchTerm" class="clear-search" (click)="clearSearch()">
           <i class="fas fa-times"></i>
         </button>
       </div>
-      
+
       <div class="filters">
         <div class="filter">
           <select [(ngModel)]="roleFilter">
@@ -34,7 +30,7 @@
             <option value="Officer">Officer</option>
           </select>
         </div>
-        
+
         <!-- Removed the status filter -->
       </div>
     </div>
@@ -74,7 +70,7 @@
         </tbody>
       </table>
     </div>
-    
+
     <ng-template #noUsers>
       <div class="not-found">
         <h2>No users found</h2>
@@ -82,30 +78,26 @@
         <button class="clear-search-btn" (click)="clearSearch()">Clear Search</button>
       </div>
     </ng-template>
-    
+
     <!-- Pagination -->
     <div class="pagination" *ngIf="filteredUsers.length > 0">
       <div class="pagination-info">
-        Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to 
-        {{ Math.min(currentPage * itemsPerPage, filteredUsers.length) }} of 
+        Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+        {{ Math.min(currentPage * itemsPerPage, filteredUsers.length) }} of
         {{ filteredUsers.length }} users
       </div>
       <div class="pagination-controls">
         <button class="pagination-btn" (click)="previousPage()" [disabled]="currentPage === 1">
           <i class="fas fa-chevron-left"></i>
         </button>
-        
+
         <ng-container *ngFor="let page of [1, 2, 3, 4, 5]">
-          <button 
-            *ngIf="page <= totalPages"
-            class="pagination-btn" 
-            [class.active]="currentPage === page"
-            (click)="goToPage(page)"
-          >
+          <button *ngIf="page <= totalPages" class="pagination-btn" [class.active]="currentPage === page"
+            (click)="goToPage(page)">
             {{ page }}
           </button>
         </ng-container>
-        
+
         <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
           <i class="fas fa-chevron-right"></i>
         </button>
@@ -130,26 +122,18 @@
       <h2>Add New UAM User</h2>
       <button class="close-modal-btn" (click)="closeAddUserModal()">×</button>
     </div>
-    
+
     <div class="modal-body">
       <form [formGroup]="addUserForm">
         <!-- Employee Name with Auto-complete -->
         <div class="form-group">
           <label for="employeeName">Employee Name</label>
           <div class="autocomplete-container">
-            <input 
-              type="text" 
-              id="employeeName" 
-              formControlName="name"
-              placeholder="Start typing employee name..."
-              (input)="searchEmployees()"
-            >
+            <input type="text" id="employeeName" formControlName="name" placeholder="Start typing employee name..."
+              (input)="searchEmployees()">
             <div class="autocomplete-results" *ngIf="employeeSearchResults.length > 0">
-              <div 
-                *ngFor="let employee of employeeSearchResults" 
-                class="autocomplete-item"
-                (click)="selectEmployee(employee)"
-              >
+              <div *ngFor="let employee of employeeSearchResults" class="autocomplete-item"
+                (click)="selectEmployee(employee)">
                 {{ employee.name }} ({{ employee.id }})
               </div>
             </div>
@@ -158,33 +142,22 @@
             Employee name is required
           </div>
         </div>
-        
+
         <!-- Employee ID (auto-filled) -->
         <div class="form-group">
           <label for="employeeId">Employee ID</label>
-          <input 
-            type="text" 
-            id="employeeId" 
-            formControlName="id"
-            placeholder="ID will be auto-filled"
-            readonly
-          >
+          <input type="text" id="employeeId" formControlName="id" placeholder="ID will be auto-filled" readonly>
         </div>
-        
+
         <!-- Email -->
         <div class="form-group">
           <label for="email">Email</label>
-          <input 
-            type="email" 
-            id="email" 
-            formControlName="email"
-            placeholder="Enter email address"
-          >
+          <input type="email" id="email" formControlName="email" placeholder="Enter email address">
           <div class="error-message" *ngIf="addUserForm.get('email')?.invalid && addUserForm.get('email')?.touched">
             Valid email is required
           </div>
         </div>
-        
+
         <!-- Department -->
         <div class="form-group">
           <label for="department">Department</label>
@@ -192,33 +165,23 @@
             <option value="">Select Department</option>
             <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
           </select>
-          <div class="error-message" *ngIf="addUserForm.get('department')?.invalid && addUserForm.get('department')?.touched">
+          <div class="error-message"
+            *ngIf="addUserForm.get('department')?.invalid && addUserForm.get('department')?.touched">
             Department is required
           </div>
         </div>
-        
+
         <!-- UAM Role -->
         <div class="form-group">
           <label>UAM Role</label>
           <div class="role-options">
             <div class="role-option">
-              <input 
-                type="radio" 
-                id="roleOfficer" 
-                formControlName="role" 
-                value="Officer"
-                (change)="onRoleChange()"
-              >
+              <input type="radio" id="roleOfficer" formControlName="role" value="Officer" (change)="onRoleChange()">
               <label for="roleOfficer">UAM Officer</label>
             </div>
             <div class="role-option">
-              <input 
-                type="radio" 
-                id="roleSupervisor" 
-                formControlName="role" 
-                value="Supervisor"
-                (change)="onRoleChange()"
-              >
+              <input type="radio" id="roleSupervisor" formControlName="role" value="Supervisor"
+                (change)="onRoleChange()">
               <label for="roleSupervisor">UAM Supervisor</label>
             </div>
           </div>
@@ -226,18 +189,13 @@
             Role selection is required
           </div>
         </div>
-        
+
         <!-- Application Access (only for Officers) -->
         <div class="form-group" *ngIf="addUserForm.get('role')?.value === 'Officer'">
           <label>Authorized Applications</label>
           <div class="apps-selection">
             <div *ngFor="let app of availableApps" class="app-checkbox">
-              <input 
-                type="checkbox" 
-                [id]="'app-' + app.id" 
-                [value]="app.name"
-                (change)="toggleAppSelection(app.name)"
-              >
+              <input type="checkbox" [id]="'app-' + app.id" [value]="app.name" (change)="toggleAppSelection(app.name)">
               <label [for]="'app-' + app.id">{{ app.name }}</label>
             </div>
           </div>
@@ -245,23 +203,26 @@
             At least one application must be selected for UAM Officers
           </div>
         </div>
+        <!-- Password -->
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" formControlName="password"
+            placeholder="Enter password (min 6 characters)">
+          <div class="error-message"
+            *ngIf="addUserForm.get('password')?.invalid && addUserForm.get('password')?.touched">
+            <div *ngIf="addUserForm.get('password')?.errors?.['required']">Password is required</div>
+            <div *ngIf="addUserForm.get('password')?.errors?.['minlength']">Password must be at least 6 characters</div>
+          </div>
+        </div>
       </form>
     </div>
-    
+
     <div class="modal-footer">
       <button class="cancel-btn" (click)="closeAddUserModal()">Cancel</button>
-      <button 
-        class="submit-btn" 
-        [disabled]="addUserForm.invalid || isOfficerWithNoApps()"
-        (click)="submitAddUserForm()"
-      >
+      <button class="submit-btn" [disabled]="addUserForm.invalid || isOfficerWithNoApps()"
+        (click)="submitAddUserForm()">
         Add User
       </button>
     </div>
   </div>
 </div>
-
-
-
-
-

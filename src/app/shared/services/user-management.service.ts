@@ -5,10 +5,11 @@ import { AuditLog } from '../models/audit-log.model';
 import { environment } from '../../../environments/environment';
 
 export interface UAMUser {
-  id: string;
+  id?: string;
   name: string;
   email: string;
   role: string;
+  password: string;
   department: string;
   status: string;
   lastActive?: string;
@@ -66,6 +67,7 @@ export class UserManagementService {
       id: id,
       name: 'Mock User',
       email: 'mock@example.com',
+      password: 'password123',
       role: 'Officer',
       department: 'Security',
       status: 'Active',
@@ -130,51 +132,51 @@ export class UserManagementService {
     lastMonth.setMonth(now.getMonth() - 1);
     
     return [
-      {
-        id: 'user-1',
-        name: 'Adebayo Okafor',
-        email: 'adebayo.okafor@gtbank.com',
-        role: 'Supervisor',
-        department: 'IT',
-        status: 'Active',
-        lastActive: now.toISOString()
-      },
-      {
-        id: 'user-2',
-        name: 'Chioma Adeyemi',
-        email: 'chioma.adeyemi@gtbank.com',
-        role: 'Officer',
-        department: 'Security',
-        status: 'Active',
-        lastActive: yesterday.toISOString()
-      },
-      {
-        id: 'user-3',
-        name: 'Oluwaseun Nwachukwu',
-        email: 'oluwaseun.nwachukwu@gtbank.com',
-        role: 'Officer',
-        department: 'Operations',
-        status: 'Inactive',
-        lastActive: lastWeek.toISOString()
-      },
-      {
-        id: 'user-4',
-        name: 'Ngozi Ojo',
-        email: 'ngozi.ojo@gtbank.com',
-        role: 'Supervisor',
-        department: 'Finance',
-        status: 'Active',
-        lastActive: lastMonth.toISOString()
-      },
-      {
-        id: 'user-5',
-        name: 'Emeka Okonkwo',
-        email: 'emeka.okonkwo@gtbank.com',
-        role: 'Officer',
-        department: 'Security',
-        status: 'Active',
-        lastActive: now.toISOString()
-      }
+      // {
+      //   id: 'user-1',
+      //   name: 'Adebayo Okafor',
+      //   email: 'adebayo.okafor@gtbank.com',
+      //   role: 'Supervisor',
+      //   department: 'IT',
+      //   status: 'Active',
+      //   lastActive: now.toISOString()
+      // },
+      // {
+      //   id: 'user-2',
+      //   name: 'Chioma Adeyemi',
+      //   email: 'chioma.adeyemi@gtbank.com',
+      //   role: 'Officer',
+      //   department: 'Security',
+      //   status: 'Active',
+      //   lastActive: yesterday.toISOString()
+      // },
+      // {
+      //   id: 'user-3',
+      //   name: 'Oluwaseun Nwachukwu',
+      //   email: 'oluwaseun.nwachukwu@gtbank.com',
+      //   role: 'Officer',
+      //   department: 'Operations',
+      //   status: 'Inactive',
+      //   lastActive: lastWeek.toISOString()
+      // },
+      // {
+      //   id: 'user-4',
+      //   name: 'Ngozi Ojo',
+      //   email: 'ngozi.ojo@gtbank.com',
+      //   role: 'Supervisor',
+      //   department: 'Finance',
+      //   status: 'Active',
+      //   lastActive: lastMonth.toISOString()
+      // },
+      // {
+      //   id: 'user-5',
+      //   name: 'Emeka Okonkwo',
+      //   email: 'emeka.okonkwo@gtbank.com',
+      //   role: 'Officer',
+      //   department: 'Security',
+      //   status: 'Active',
+      //   lastActive: now.toISOString()
+      // }
     ];
   }
 }

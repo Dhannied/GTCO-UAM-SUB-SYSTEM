@@ -19,7 +19,7 @@
           [(ngModel)]="searchTerm"
           (input)="applyFilters()"
         >
-        <i class="fas fa-search search-icon"></i>
+        <!-- <i class="fas fa-search search-icon"></i> -->
       </div>
       
       <!-- Selection Mode Info -->
@@ -36,6 +36,9 @@
         Bulk Deactivation
       </button>
     </div>
+    <div *ngIf="successMessage" class="success-toast">
+  {{ successMessage }}
+</div>
 
     <!-- Employees Table -->
     <table class="employees-table">

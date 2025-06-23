@@ -45,17 +45,20 @@ export class UserManagementComponent implements OnInit {
   ];
   
   // Departments list
-  departments = [
-    'IT',
-    'Security',
-    'Operations',
-    'Finance',
-    'HR',
-    'Project Management',
-    'Customer Service',
-    'Legal',
-    'Marketing'
+  departments: string[] = [
+    'IT'
   ];
+  // departments = [
+  //   'IT',
+  //   'Security',
+  //   'Operations',
+  //   'Finance',
+  //   'HR',
+  //   'Project Management',
+  //   'Customer Service',
+  //   'Legal',
+  //   'Marketing'
+  // ];
   
   // Mock employee database for search
   employeeDatabase = [
@@ -79,12 +82,12 @@ export class UserManagementComponent implements OnInit {
   ) {
     // Initialize the form
     this.addUserForm = this.fb.group({
-      name: ['', Validators.required],
-      id: [''],
-      email: ['', [Validators.required, Validators.email]],
-      department: ['', Validators.required],
-      role: ['Officer', Validators.required]
-    });
+  name: ['', Validators.required],
+  email: ['', [Validators.required, Validators.email]],
+  department: ['', Validators.required],
+  role: ['Officer', Validators.required],
+  password: ['', [Validators.required, Validators.minLength(6)]]
+});
   }
   
   ngOnInit(): void {
@@ -125,8 +128,7 @@ export class UserManagementComponent implements OnInit {
       // Filter by search term
       const matchesSearch = this.searchTerm === '' || 
         user.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        user.id.toLowerCase().includes(this.searchTerm.toLowerCase());
+        user.email.toLowerCase().includes(this.searchTerm.toLowerCase());
       
       // Filter by role
       const matchesRole = this.roleFilter === 'All Roles' || user.role === this.roleFilter;
@@ -273,13 +275,13 @@ export class UserManagementComponent implements OnInit {
     
     // Create new UAM user object
     const newUser: UAMUser = {
-      id: formValues.id,
       name: formValues.name,
       email: formValues.email,
       role: formValues.role,
       department: formValues.department,
       status: 'Active',
       lastActive: new Date().toISOString(),
+      password: formValues.password
       // Use id instead of employeeId or map it correctly
       // employeeId: formValues.id, // This line is causing the error
     };
@@ -475,6 +477,11 @@ export class UserManagementComponent implements OnInit {
     }
   }
 }
+
+
+
+
+
 
 
 

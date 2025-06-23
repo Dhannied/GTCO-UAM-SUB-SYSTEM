@@ -19,6 +19,8 @@ import { SidebarComponent } from '../shared/sidebar/sidebar.component';
   styleUrls: ['./employees.component.css']
 })
 export class EmployeesComponent implements OnInit {
+  successMessage: string = '';
+
   // Add Math object for template
   Math = Math;
   
@@ -489,7 +491,14 @@ export class EmployeesComponent implements OnInit {
         console.log('All audit logs saved successfully:', results);
         
         // Show success message
-        alert(`Successfully deactivated ${this.selectedApplication} for ${selectedEmployees.length} employees.`);
+        // alert(`Successfully deactivated ${this.selectedApplication} for ${selectedEmployees.length} employees.`);
+        this.successMessage = `Successfully deactivated ${this.selectedApplication} for ${selectedEmployees.length} employees.`;
+
+// Clear the message after 5 seconds
+setTimeout(() => {
+  this.successMessage = '';
+}, 5000);
+
         
         // Reset selections
         this.employees.forEach(employee => {
@@ -506,7 +515,8 @@ export class EmployeesComponent implements OnInit {
         console.error('Error saving audit logs:', error);
         
         // Still show success message for the UI
-        alert(`Successfully deactivated ${this.selectedApplication} for ${selectedEmployees.length} employees.`);
+        // alert(`Successfully deactivated ${this.selectedApplication} for ${selectedEmployees.length} employees.`);
+        this.successMessage = `Successfully deactivated ${this.selectedApplication} for ${selectedEmployees.length} employees.`;
         
         // Reset selections
         this.employees.forEach(employee => {

@@ -12,6 +12,24 @@
   
 }
 
+.success-toast {
+  background-color: #e84d1c;
+  color:#fff ;
+  text-align: center;
+  padding: 12px 20px;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  animation: fadeInOut 5s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 /* Reuse sidebar styles from dashboard */
 .sidebar {
   width: 250px;

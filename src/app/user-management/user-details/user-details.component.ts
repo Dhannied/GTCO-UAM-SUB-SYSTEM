@@ -65,6 +65,7 @@ export class UserDetailsComponent implements OnInit {
       name: 'Test User',
       email: 'test@example.com',
       role: 'Officer',
+      password: 'password123',
       department: 'IT Security',
       status: 'Active',
       lastActive: new Date().toISOString()
