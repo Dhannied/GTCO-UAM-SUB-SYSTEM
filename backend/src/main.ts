@@ -10,7 +10,8 @@ async function bootstrap() {
   
   // ✅ Enable CORS once
   app.enableCors({
-    origin: 'https://gtco-uam-sub-system.vercel.app', // or explicitly put your frontend URL
+    origin: '*', // or explicitly put your frontend URL
+    // origin: 'https://gtco-uam-sub-system.vercel.app',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,

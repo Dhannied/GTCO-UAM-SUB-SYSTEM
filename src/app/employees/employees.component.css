@@ -124,7 +124,8 @@
   padding: 20px 40px;
   margin-left: 250px; /* Same as sidebar width */
   height: 100vh;
-  overflow-y: auto;
+  overflow-y: auto; /* This allows scrolling within the main content */
+  box-sizing: border-box;
 }
 
 /* Header */
