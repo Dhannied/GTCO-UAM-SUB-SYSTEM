@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, supervisorGuard } from './core/guards/auth.guard';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -34,20 +34,20 @@ export const routes: Routes = [
   {
     path: 'analytics',
     loadComponent: () => import('./analytics/analytics.component').then(m => m.AnalyticsComponent),
-    canActivate: [supervisorGuard]
+    canActivate: [authGuard]
   },
   {
     path: 'user-management',
     loadComponent: () => import('./user-management/user-management.component').then(m => m.UserManagementComponent),
-    canActivate: [supervisorGuard]
+    canActivate: [authGuard]
   },
   {
     path: 'user-management/user/:id',
     loadComponent: () => import('./user-management/user-details/user-details.component').then(m => m.UserDetailsComponent),
-    canActivate: [supervisorGuard]
+    canActivate: [authGuard]
   },
   {
-    path: '',
+    path: '**',
     redirectTo: 'dashboard'
   }
 ];
