@@ -1,0 +1,10 @@
+<!-- Example of conditional rendering in sidebar -->
+<a routerLink="/analytics" routerLinkActive="active" *ngIf="userRole === 'Supervisor'">
+  <i class="fas fa-chart-line"></i>
+  <span>Analytics</span>
+</a>
+
+<a routerLink="/user-management" routerLinkActive="active" *ngIf="userRole === 'Supervisor'">
+  <i class="fas fa-users-cog"></i>
+  <span>User Management</span>
+</a>

@@ -84,15 +84,12 @@ export class AuthService {
   isLoggedIn(): boolean {
     return !!this.token;
   }
+
+  getCurrentUser() {
+    const userJson = localStorage.getItem('currentUser');
+    if (userJson) {
+      return JSON.parse(userJson);
+    }
+    return null;
+  }
 }
-
-
-
-
-
-
-
-
-
-
-
