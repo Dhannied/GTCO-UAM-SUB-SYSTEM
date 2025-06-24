@@ -1,0 +1,27 @@
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+  width: 100vw; /* Full viewport width */
+  text-align: center;
+  background-color: #f4f4f4; /* Optional: a light background for the page */
+  font-family: "Roboto", sans-serif;
+}
+
+.access-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px; /* Space between logo and text */
+}
+
+.app-logo {
+  width: 100px; /* Adjust size as needed */
+  height: auto;
+}
+
+.access-message {
+  font-size: 1.2rem;
+  color: #333;
+}

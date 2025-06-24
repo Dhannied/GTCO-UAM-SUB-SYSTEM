@@ -122,7 +122,7 @@ export class UsersService {
         
         // Add timestamp to ensure email uniqueness
         const timestamp = Date.now() + i;
-        const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${timestamp}@gtbank.com`;
+        const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.@gtbank.com`;
         
         const department = departments[Math.floor(Math.random() * departments.length)];
         const position = positions[department][Math.floor(Math.random() * positions[department].length)];
@@ -173,6 +173,21 @@ export class UsersService {
       throw error;
     }
   }
+
+ async findDeactivatedById(id: string): Promise<User> {
+  const user = await this.usersRepository.findOne({
+    where: { id, status: 'Deactivated' },
+    relations: ['applications']
+  });
+
+  if (!user) {
+    throw new NotFoundException(`Deactivated user with ID ${id} not found`);
+  }
+
+  return user;
+}
+
+
 }
 
 

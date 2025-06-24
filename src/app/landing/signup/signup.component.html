@@ -1,0 +1,58 @@
+<div class="login-container">
+  <div class="left-panel">
+    <div class="left-container">
+      <div class="content">
+        <h1>
+          E-Document Management
+        </h1>
+        <p>Experience seamless access to everything you desire, curated with care.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="logo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/2/28/GTCO_logo.svg" alt="GTCO Logo" class="logo">
+    </div>
+
+    <div class="form-container">
+      <h2>Login</h2>
+      <p class="subtitle">Login to unlock your personalized experience.</p>
+
+      <form (ngSubmit)="login()">
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input
+            type="email"
+            id="email"
+            placeholder="Enter your email address"
+            [(ngModel)]="email"
+            name="email"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password *</label>
+          <div class="password-input">
+            <input
+              type="password"
+              id="password"
+              placeholder="Enter password"
+              [(ngModel)]="password"
+              name="password"
+              required
+            >
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="isLoading">
+          {{ isLoading ? 'Logging In...' : 'Login' }}
+        </button>
+
+        <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+        <p class="login-link"><a href="#">Forgot your password?</a></p>
+      </form>
+    </div>
+  </div>
+</div>

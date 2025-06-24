@@ -103,7 +103,7 @@ let UsersService = class UsersService {
                 const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
                 const name = `${firstName} ${lastName}`;
                 const timestamp = Date.now() + i;
-                const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${timestamp}@gtbank.com`;
+                const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.@gtbank.com`;
                 const department = departments[Math.floor(Math.random() * departments.length)];
                 const position = positions[department][Math.floor(Math.random() * positions[department].length)];
                 console.log(`Creating user ${i + 1}/${count}: ${name}`);
@@ -141,6 +141,16 @@ let UsersService = class UsersService {
             console.error('Error generating mock employees:', error);
             throw error;
         }
+    }
+    async findDeactivatedById(id) {
+        const user = await this.usersRepository.findOne({
+            where: { id, status: 'Deactivated' },
+            relations: ['applications']
+        });
+        if (!user) {
+            throw new common_1.NotFoundException(`Deactivated user with ID ${id} not found`);
+        }
+        return user;
     }
 };
 exports.UsersService = UsersService;

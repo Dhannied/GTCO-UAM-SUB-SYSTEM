@@ -136,121 +136,26 @@ export class EmployeeDetailsComponent implements OnInit {
     }
   }
 
-  // Add a method to load employee applications if needed
   loadEmployeeApplications(): void {
-    // This would be an API call in a real application
-    // For now, we'll use mock applications
-    if (this.employee) {
-      this.employee.applications = this.getMockApplications();
-      
-      // Update the state service with the updated employee
-      this.appStateService.updateEmployee(this.employee);
-      
-      // Load audit logs
-      this.loadAuditLogs();
-    }
+  if (this.employee) {
+    this.employeesService.getApplicationsByUserId(this.employee.id).subscribe({
+      next: (apps) => {
+        this.employee!.applications = apps;
+        this.appStateService.updateEmployee(this.employee!);
+        this.loadAuditLogs();
+      },
+      error: (err) => {
+        console.error('Failed to load applications from API:', err);
+      }
+    });
   }
+}
+
 
   // Get mock employees data with complete application data
   getMockEmployees(): Employee[] {
     return [
-      {
-        id: 'GTB-001',
-        name: 'John Doe',
-        photo: '',
-        department: 'Retail Banking',
-        position: 'Relationship Manager',
-        status: 'Active', // This is now a valid value for the union type
-        lastActive: '2025-06-15 09:42',
-        employeeId: 'EMP-10045',
-        joinDate: 'May 15, 2020',
-        applications: [
-          {
-            id: 'app1',
-            name: 'Core Banking',
-            platform: 'Finacle 11.0',
-            accessLevel: 'Full Access',
-            lastUsed: 'Today, 9:45 AM',
-            icon: 'bank',
-            iconBg: '#d1e3ff',
-            status: 'Active'
-          },
-          {
-            id: 'app2',
-            name: 'Finnacle',
-            platform: 'Finnacle 10.2',
-            accessLevel: 'Full Access',
-            lastUsed: 'Yesterday, 3:15 PM',
-            icon: 'chart-line',
-            iconBg: '#e9d5ff',
-            status: 'Active'
-          },
-          {
-            id: 'app3',
-            name: 'Gap',
-            platform: 'Gap 3.5',
-            accessLevel: 'Read Only',
-            lastUsed: '3 days ago',
-            icon: 'file-alt',
-            iconBg: '#ffe8d1',
-            status: 'Active'
-          },
-          {
-            id: 'app4',
-            name: 'E-Document Manager',
-            platform: 'EDM 2.0',
-            accessLevel: 'Full Access',
-            lastUsed: 'Last week',
-            icon: 'folder',
-            iconBg: '#d1ffdb',
-            status: 'Active'
-          },
-          {
-            id: 'app5',
-            name: 'Active Directory',
-            platform: 'Windows Server 2019',
-            accessLevel: 'Read Only',
-            lastUsed: '2 weeks ago',
-            icon: 'users',
-            iconBg: '#ffd1d1',
-            status: 'Active'
-          }
-        ]
-      },
-      // Add more employees as needed
-      {
-        id: 'GTB-002',
-        name: 'Jane Smith',
-        photo: '',
-        department: 'Corporate Banking',
-        position: 'Account Officer',
-        status: 'Active', // This is now a valid value for the union type
-        lastActive: '2025-06-14 14:22',
-        employeeId: 'EMP-10046',
-        joinDate: 'April 10, 2018',
-        applications: [
-          {
-            id: 'app1',
-            name: 'Core Banking',
-            platform: 'Finacle 11.0',
-            accessLevel: 'Full Access',
-            lastUsed: 'Today, 10:15 AM',
-            icon: 'bank',
-            iconBg: '#d1e3ff',
-            status: 'Active'
-          },
-          {
-            id: 'app2',
-            name: 'Finnacle',
-            platform: 'Finnacle 10.2',
-            accessLevel: 'Read Only',
-            lastUsed: '2 days ago',
-            icon: 'chart-line',
-            iconBg: '#e9d5ff',
-            status: 'Active'
-          }
-        ]
-      }
+     
     ];
   }
 
@@ -497,56 +402,7 @@ export class EmployeeDetailsComponent implements OnInit {
   // Add a method to get mock applications
   getMockApplications(): Application[] {
     return [
-      {
-        id: 'app1',
-        name: 'Core Banking',
-        platform: 'Finacle 11.0',
-        accessLevel: 'Full Access',
-        lastUsed: 'Today, 9:45 AM',
-        icon: 'bank',
-        iconBg: '#d1e3ff',
-        status: 'Active'
-      },
-      {
-        id: 'app2',
-        name: 'Finnacle',
-        platform: 'Finnacle 10.2',
-        accessLevel: 'Full Access',
-        lastUsed: 'Yesterday, 3:15 PM',
-        icon: 'chart-line',
-        iconBg: '#e9d5ff',
-        status: 'Active'
-      },
-      {
-        id: 'app3',
-        name: 'Gap',
-        platform: 'Gap 3.5',
-        accessLevel: 'Read Only',
-        lastUsed: '3 days ago',
-        icon: 'file-alt',
-        iconBg: '#ffe8d1',
-        status: 'Active'
-      },
-      {
-        id: 'app4',
-        name: 'E-Document Manager',
-        platform: 'EDM 2.0',
-        accessLevel: 'Full Access',
-        lastUsed: 'Last week',
-        icon: 'folder',
-        iconBg: '#d1ffdb',
-        status: 'Active'
-      },
-      {
-        id: 'app5',
-        name: 'Active Directory',
-        platform: 'Windows Server 2019',
-        accessLevel: 'Read Only',
-        lastUsed: '2 weeks ago',
-        icon: 'users',
-        iconBg: '#ffd1d1',
-        status: 'Active'
-      }
+      
     ];
   }
 

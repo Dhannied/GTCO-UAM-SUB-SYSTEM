@@ -2,6 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, Up
 import { Application } from '../../applications/entities/application.entity';
 import { AuditLog } from '../../audit-logs/entities/audit-log.entity';
 
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')

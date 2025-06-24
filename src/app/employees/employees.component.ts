@@ -90,6 +90,7 @@ export class EmployeesComponent implements OnInit {
             return {
               id: app.id || `app-${Math.random().toString(36).substr(2, 9)}`,
               name: app.name || '',
+              email: emp.email || '',
               platform: app.platform || '',
               accessLevel: (app.accessLevel || 'Read Only') as 'Full Access' | 'Read Only' | 'Write Only',
               lastUsed: app.lastUsed || '',
@@ -112,6 +113,7 @@ export class EmployeesComponent implements OnInit {
             employeeId: emp.employeeId || '',
             joinDate: emp.joinDate || '',
             applications: applications,
+            email: emp.email || '',
             selected: false
           };
         });
@@ -148,114 +150,6 @@ export class EmployeesComponent implements OnInit {
   // Get mock employees data
   getMockEmployees(): Employee[] {
     return [
-      {
-        id: 'GTB-001',
-        name: 'John Doe',
-        photo: '',
-        department: 'Retail Banking',
-        position: 'Relationship Manager',
-        status: 'Active',
-        lastActive: '2025-06-15 09:42',
-        employeeId: 'EMP-10045',
-        joinDate: 'May 15, 2020',
-        applications: []
-      },
-      {
-        id: 'GTB-002',
-        name: 'Jane Smith',
-        photo: '',
-        department: 'Corporate Banking',
-        position: 'Account Officer',
-        status: 'Active',
-        lastActive: '2025-06-14 14:22',
-        employeeId: 'EMP-10046',
-        joinDate: 'April 10, 2018',
-        applications: []
-      },
-      {
-        id: 'GTB-003',
-        name: 'Michael Brown',
-        photo: '',
-        department: 'IT',
-        position: 'Systems Administrator',
-        status: 'Active',
-        lastActive: '2025-06-13 11:30',
-        employeeId: 'EMP-10047',
-        joinDate: 'June 1, 2023',
-        applications: []
-      },
-      {
-        id: 'GTB-004',
-        name: 'Sarah Johnson',
-        photo: '',
-        department: 'Operations',
-        position: 'Operations Manager',
-        status: 'Active',
-        lastActive: '2025-06-12 16:45',
-        employeeId: 'EMP-10048',
-        joinDate: 'May 20, 2023',
-        applications: []
-      },
-      {
-        id: 'GTB-005',
-        name: 'Robert Wilson',
-        photo: '',
-        department: 'Finance',
-        position: 'Financial Analyst',
-        status: 'Active',
-        lastActive: '2025-06-11 10:15',
-        employeeId: 'EMP-10049',
-        joinDate: 'April 25, 2023',
-        applications: []
-      },
-      {
-        id: 'GTB-006',
-        name: 'Thomas Anderson',
-        photo: '',
-        department: 'Risk Management',
-        position: 'Risk Analyst',
-        status: 'Active',
-        lastActive: '2025-06-10 13:20',
-        employeeId: 'EMP-10050',
-        joinDate: 'March 15, 2023',
-        applications: []
-      },
-      {
-        id: 'GTB-007',
-        name: 'Drew Cano',
-        photo: '',
-        department: 'Customer Service',
-        position: 'Customer Service Representative',
-        status: 'Active',
-        lastActive: '2025-06-09 11:45',
-        employeeId: 'EMP-10051',
-        joinDate: 'May 5, 2023',
-        applications: []
-      },
-      {
-        id: 'GTB-008',
-        name: 'Orlando Diggs',
-        photo: '',
-        department: 'Treasury',
-        position: 'Treasury Analyst',
-        status: 'Active',
-        lastActive: '2025-06-08 09:30',
-        employeeId: 'EMP-10052',
-        joinDate: 'April 20, 2023',
-        applications: []
-      },
-      {
-        id: 'GTB-009',
-        name: 'Andi Lane',
-        photo: '',
-        department: 'Legal',
-        position: 'Legal Advisor',
-        status: 'Active',
-        lastActive: '2025-06-07 14:15',
-        employeeId: 'EMP-10053',
-        joinDate: 'March 25, 2023',
-        applications: []
-      }
     ];
   }
   

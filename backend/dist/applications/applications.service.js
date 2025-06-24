@@ -17,9 +17,11 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const application_entity_1 = require("./entities/application.entity");
+const user_entity_1 = require("../users/entities/user.entity");
 let ApplicationsService = class ApplicationsService {
-    constructor(applicationsRepository) {
+    constructor(applicationsRepository, usersRepository) {
         this.applicationsRepository = applicationsRepository;
+        this.usersRepository = usersRepository;
     }
     async findAll() {
         return this.applicationsRepository.find({ relations: ['user'] });
@@ -27,7 +29,7 @@ let ApplicationsService = class ApplicationsService {
     async findOne(id) {
         const application = await this.applicationsRepository.findOne({
             where: { id },
-            relations: ['user']
+            relations: ['user'],
         });
         if (!application) {
             throw new common_1.NotFoundException(`Application with ID ${id} not found`);
@@ -40,7 +42,33 @@ let ApplicationsService = class ApplicationsService {
         });
     }
     async create(createApplicationDto) {
-        const application = this.applicationsRepository.create(createApplicationDto);
+        const { userId, status, ...rest } = createApplicationDto;
+        const user = await this.usersRepository.findOne({ where: { id: userId } });
+        if (!user) {
+            throw new common_1.NotFoundException(`User with ID ${userId} not found`);
+        }
+        const application = this.applicationsRepository.create({
+            ...rest,
+            user,
+            status: status,
+        });
+        return this.applicationsRepository.save(application);
+    }
+    async deactivateByUserAndName(userId, name, dto) {
+        const application = await this.applicationsRepository.findOne({
+            where: {
+                user: { id: userId },
+                name,
+            },
+            relations: ['user'],
+        });
+        if (!application) {
+            throw new common_1.NotFoundException(`Application ${name} for user ${userId} not found`);
+        }
+        application.status = dto.status;
+        application.deactivationType = dto.deactivationType;
+        application.startDate = dto.startDate ? new Date(dto.startDate) : null;
+        application.endDate = dto.endDate ? new Date(dto.endDate) : null;
         return this.applicationsRepository.save(application);
     }
     async update(id, updateApplicationDto) {
@@ -59,6 +87,8 @@ exports.ApplicationsService = ApplicationsService;
 exports.ApplicationsService = ApplicationsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(application_entity_1.Application)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(1, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository])
 ], ApplicationsService);
 //# sourceMappingURL=applications.service.js.map

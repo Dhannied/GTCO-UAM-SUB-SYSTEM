@@ -1,12 +1,26 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { RoleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'login',
+    redirectTo: 'landing',
     pathMatch: 'full'
   },
+  {
+  path: 'landing',
+  loadComponent: () => import('./landing/landing/landing.component').then(m => m.LandingComponent)
+},
+{
+  path: 'landing/signup',
+  loadComponent: () => import('./landing/signup/signup.component').then(m => m.SignupComponent)
+},
+{
+  path: 'landing/access',
+  loadComponent: () => import('./landing/access/access.component').then(m => m.AccessComponent)
+},
+
   {
     path: 'login',
     loadComponent: () => import('./login/login.component').then(m => m.LoginComponent)
@@ -34,12 +48,12 @@ export const routes: Routes = [
   {
     path: 'analytics',
     loadComponent: () => import('./analytics/analytics.component').then(m => m.AnalyticsComponent),
-    canActivate: [authGuard]
+    canActivate: [authGuard, RoleGuard]
   },
   {
     path: 'user-management',
     loadComponent: () => import('./user-management/user-management.component').then(m => m.UserManagementComponent),
-    canActivate: [authGuard]
+    canActivate: [authGuard, RoleGuard]
   },
   {
     path: 'user-management/user/:id',
@@ -48,6 +62,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'dashboard'
+    redirectTo: ''
   }
 ];

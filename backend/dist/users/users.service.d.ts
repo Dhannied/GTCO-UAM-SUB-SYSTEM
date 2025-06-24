@@ -12,4 +12,5 @@ export declare class UsersService {
     update(id: string, updateUserDto: UpdateUserDto): Promise<User>;
     remove(id: string): Promise<void>;
     generateMockEmployees(count?: number): Promise<User[]>;
+    findDeactivatedById(id: string): Promise<User>;
 }

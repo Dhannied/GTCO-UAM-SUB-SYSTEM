@@ -1,4 +1,5 @@
 export interface Employee {
+  email: string;
   id: string;
   name: string;
   photo?: string;
@@ -15,6 +16,7 @@ export interface Employee {
 export interface Application {
   id?: string;
   name: string;
+  email: string;
   platform?: string;
   accessLevel?: string;
   lastUsed?: string;

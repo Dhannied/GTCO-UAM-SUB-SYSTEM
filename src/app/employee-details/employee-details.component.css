@@ -193,7 +193,36 @@
 .app-info {
   display: flex;
   align-items: center;
+  gap: 12px; /* This adds space between icon and text */
 }
+
+.app-icon-wrapper {
+  background-color: #e84d1c;
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.app-icon-wrapper i {
+  color: white;
+  font-size: 20px;
+}
+
+.app-details {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 
+.app-info {
+  display: flex;
+  align-items: center;
+} */
 
 .app-icon {
   width: 40px;
@@ -210,10 +239,27 @@
   color: #333;
 }
 
-.app-details {
+/* .app-icon-wrapper {
+  background-color: #e84d1c;
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+} */
+
+/* .app-icon-wrapper i {
+  color: white;
+  font-size: 20px;
+} */
+
+
+/* .app-details {
   display: flex;
   flex-direction: column;
-}
+} */
 
 .app-name {
   font-weight: 500;

@@ -29,6 +29,9 @@ let UsersController = class UsersController {
     findOne(id) {
         return this.usersService.findOne(id);
     }
+    findDeactivatedById(id) {
+        return this.usersService.findDeactivatedById(id);
+    }
     create(createUserDto) {
         return this.usersService.create(createUserDto);
     }
@@ -63,9 +66,27 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "findOne", null);
 __decorate([
+    (0, common_1.Get)('deactivated/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get a deactivated user by ID' }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Return the deactivated user',
+        type: user_entity_1.User,
+    }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Deactivated user not found' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "findDeactivatedById", null);
+__decorate([
     (0, common_1.Post)(),
     (0, swagger_1.ApiOperation)({ summary: 'Create a new user' }),
-    (0, swagger_1.ApiResponse)({ status: 201, description: 'User created successfully', type: user_entity_1.User }),
+    (0, swagger_1.ApiResponse)({
+        status: 201,
+        description: 'User created successfully',
+        type: user_entity_1.User,
+    }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto]),
@@ -74,7 +95,11 @@ __decorate([
 __decorate([
     (0, common_1.Put)(':id'),
     (0, swagger_1.ApiOperation)({ summary: 'Update a user' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'User updated successfully', type: user_entity_1.User }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'User updated successfully',
+        type: user_entity_1.User,
+    }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
@@ -95,7 +120,11 @@ __decorate([
 __decorate([
     (0, common_1.Post)('generate-mock'),
     (0, swagger_1.ApiOperation)({ summary: 'Generate mock employees' }),
-    (0, swagger_1.ApiResponse)({ status: 201, description: 'Mock employees created successfully', type: [user_entity_1.User] }),
+    (0, swagger_1.ApiResponse)({
+        status: 201,
+        description: 'Mock employees created successfully',
+        type: [user_entity_1.User],
+    }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
