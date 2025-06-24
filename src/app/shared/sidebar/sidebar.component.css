@@ -107,8 +107,17 @@
 }
 
 .nav-item.active {
-  background-color: #ffffff;
+  background-color: #ffffff !important;
   color: #e84d1c ;
+  font-weight: bold;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item.active:hover {
+  background-color: #ffffff;
+  color: #e84d1c !important ;
   font-weight: bold;
   box-shadow: -5px 0 15px rgba(0, 0, 0, 0.05);
   position: relative;

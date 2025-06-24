@@ -14,4 +14,5 @@ export declare class UsersController {
     generateMockEmployees(options?: {
         count?: number;
     }): Promise<User[]>;
+    deactivateUser(id: string): Promise<User>;
 }

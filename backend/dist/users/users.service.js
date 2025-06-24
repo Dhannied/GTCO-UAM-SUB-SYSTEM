@@ -152,6 +152,11 @@ let UsersService = class UsersService {
         }
         return user;
     }
+    async deactivateUser(id) {
+        const user = await this.findOne(id);
+        user.status = 'Deactivated';
+        return await this.usersRepository.save(user);
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([

@@ -241,68 +241,55 @@ export class EmployeeDetailsComponent implements OnInit {
   }
   
   // Confirm deactivation
-  confirmDeactivation(): void {
-    if (!this.employee || !this.selectedApp) return;
-    
-    // Update application status
-    this.appStateService.deactivateApplication(
-      this.employeeId, 
-      this.selectedApp.id, 
-      this.deactivationType,
-      this.startDate,
-      this.endDate
-    );
-    
-    // Determine reason based on deactivation type
-    const reason = this.deactivationType === 'Temporary' 
-      ? this.deactivationReason 
-      : this.permanentDeactivationReason;
-    
-    // Calculate duration for temporary deactivations
-    let duration = '';
-    if (this.deactivationType === 'Temporary' && this.startDate && this.endDate) {
-      const start = new Date(this.startDate);
-      const end = new Date(this.endDate);
-      const diffTime = Math.abs(end.getTime() - start.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      duration = `${diffDays} days`;
-    }
-    
-    // Create audit log entry
-    const auditEntry: AuditLog = {
-      date: new Date().toISOString(), // Use ISO format for consistent parsing
-      employee: this.employee?.name || '',
-      employeeId: this.employee?.employeeId || this.employeeId, // Use the business employeeId
-      application: this.selectedApp.name,
-      actionType: this.deactivationType,
-      reason: reason,
-      officer: this.appStateService.getCurrentOfficerName()
-    };
-    
-    // Add duration for temporary deactivations
-    if (this.deactivationType === 'Temporary') {
-      auditEntry.duration = duration || '30 days';
-    }
-    
-    // Add to the central audit log service
-    this.auditLogService.addLog(auditEntry).subscribe({
-      next: (log) => {
-        console.log('Audit log added successfully:', log);
-        // Refresh local audit logs
-        this.loadAuditLogs();
-      },
-      error: (error) => {
-        console.error('Error adding audit log:', error);
-        // Still update local UI
-        this.auditLogs.unshift(auditEntry);
-        this.allAuditLogs.unshift(auditEntry);
-      }
-    });
-    
-    // Close the modal
-    this.showDeactivationModal = false;
-    this.selectedApp = null;
+ // Confirm deactivation
+confirmDeactivation(): void {
+  if (!this.employee || !this.selectedApp) return;
+
+  // Update application status (ADD THIS!)
+  this.selectedApp.status = 'Inactive';
+  this.selectedApp.deactivationType = this.deactivationType;
+
+  // Existing logic to log audit
+  const reason = this.deactivationType === 'Temporary'
+    ? this.deactivationReason
+    : this.permanentDeactivationReason;
+
+  let duration = '';
+  if (this.deactivationType === 'Temporary' && this.startDate && this.endDate) {
+    const start = new Date(this.startDate);
+    const end = new Date(this.endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    duration = `${diffDays} days`;
   }
+
+  const auditEntry: AuditLog = {
+    date: new Date().toISOString(),
+    employee: this.employee.name || '',
+    employeeId: this.employee.employeeId || this.employeeId,
+    application: this.selectedApp.name,
+    actionType: this.deactivationType,
+    reason: reason,
+    officer: this.appStateService.getCurrentOfficerName(),
+    duration: this.deactivationType === 'Temporary' ? duration : undefined
+  };
+
+  this.auditLogService.addLog(auditEntry).subscribe({
+    next: (log) => {
+      console.log('Audit log added successfully:', log);
+      this.loadAuditLogs();
+    },
+    error: (error) => {
+      console.error('Error adding audit log:', error);
+      this.auditLogs.unshift(auditEntry);
+      this.allAuditLogs.unshift(auditEntry);
+    }
+  });
+
+  this.showDeactivationModal = false;
+  this.selectedApp = null;
+}
+
 
   loadAuditLogs(): void {
     // Create some mock audit logs if none exist

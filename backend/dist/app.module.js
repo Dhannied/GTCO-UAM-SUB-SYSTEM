@@ -36,7 +36,7 @@ exports.AppModule = AppModule = __decorate([
                     password: configService.get('DB_PASSWORD', 'root'),
                     database: configService.get('DB_DATABASE', 'uam_system'),
                     entities: [__dirname + '/**/*.entity{.ts,.js}'],
-                    synchronize: configService.get('NODE_ENV', 'development') !== 'production',
+                    synchronize: false,
                 }),
             }),
             users_module_1.UsersModule,

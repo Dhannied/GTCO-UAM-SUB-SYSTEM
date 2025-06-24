@@ -45,6 +45,9 @@ let UsersController = class UsersController {
         const count = options.count || 20;
         return this.usersService.generateMockEmployees(count);
     }
+    deactivateUser(id) {
+        return this.usersService.deactivateUser(id);
+    }
 };
 exports.UsersController = UsersController;
 __decorate([
@@ -130,6 +133,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "generateMockEmployees", null);
+__decorate([
+    (0, common_1.Put)(':id/deactivate'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "deactivateUser", null);
 exports.UsersController = UsersController = __decorate([
     (0, swagger_1.ApiTags)('users'),
     (0, common_1.Controller)('users'),

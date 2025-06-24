@@ -186,6 +186,12 @@ export class UsersService {
 
   return user;
 }
+async deactivateUser(id: string): Promise<User> {
+  const user = await this.findOne(id);
+  user.status = 'Deactivated';
+ return await this.usersRepository.save(user);
+}
+
 
 
 }

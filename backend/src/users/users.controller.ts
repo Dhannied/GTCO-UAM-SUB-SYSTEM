@@ -76,7 +76,7 @@ export class UsersController {
   ): Promise<User> {
     return this.usersService.update(id, updateUserDto);
   }
-
+  
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
@@ -98,4 +98,9 @@ export class UsersController {
     const count = options.count || 20; // Default to 20 if not specified
     return this.usersService.generateMockEmployees(count);
   }
+  @Put(':id/deactivate')
+deactivateUser(@Param('id') id: string) {
+  return this.usersService.deactivateUser(id);
+}
+
 }

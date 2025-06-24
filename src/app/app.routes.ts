@@ -5,15 +5,11 @@ import { RoleGuard } from './core/guards/role.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'landing',
+    redirectTo: 'login',
     pathMatch: 'full'
   },
-  {
-  path: 'landing',
-  loadComponent: () => import('./landing/landing/landing.component').then(m => m.LandingComponent)
-},
 {
-  path: 'landing/signup',
+  path: 'landing',
   loadComponent: () => import('./landing/signup/signup.component').then(m => m.SignupComponent)
 },
 {
